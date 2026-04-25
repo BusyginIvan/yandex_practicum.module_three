@@ -1,0 +1,16 @@
+services:
+  bank-ui:
+    container_name: bank-ui
+    image: bank-ui
+    build:
+      context: .
+      dockerfile: bank-ui/Dockerfile
+    restart: on-failure
+    ports:
+      - "8080:8080"
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://localhost:8080/actuator/health"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
