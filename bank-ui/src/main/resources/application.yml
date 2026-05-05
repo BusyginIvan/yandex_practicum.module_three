@@ -1,4 +1,5 @@
 server.port: ${SERVER_PORT:8080}
 spring:
   application.name: bank-ui
+  config.import: configserver:${CONFIG_SERVER_URL:http://config-server:8081}
 management.endpoints.web.exposure.include: health
