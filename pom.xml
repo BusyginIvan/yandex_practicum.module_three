@@ -33,5 +33,6 @@
     <modules>
         <module>bank-ui</module>
         <module>config-server</module>
+        <module>eureka-server</module>
     </modules>
 </project>

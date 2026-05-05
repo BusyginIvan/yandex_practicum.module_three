@@ -8,6 +8,8 @@ services:
     depends_on:
       config-server:
         condition: service_healthy
+      eureka-server:
+        condition: service_healthy
     restart: on-failure
     ports:
       - "8080:8080"
@@ -28,6 +30,21 @@ services:
       - "8081:8081"
     healthcheck:
       test: ["CMD", "curl", "-fsS", "http://localhost:8081/actuator/health"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+  eureka-server:
+    container_name: eureka-server
+    image: eureka-server
+    build:
+      context: .
+      dockerfile: eureka-server/Dockerfile
+    restart: on-failure
+    ports:
+      - "8082:8082"
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://localhost:8082/actuator/health"]
       interval: 5s
       timeout: 5s
       retries: 10
