@@ -23,4 +23,29 @@ public interface AccountRepository extends JpaRepository<AccountEntity, String> 
         @Param("name") String name,
         @Param("birthdate") LocalDate birthdate
     );
+
+    @Modifying
+    @Query(value = """
+        insert into accounts(login, name, birthdate, balance)
+        values (:login, null, null, 0)
+        on conflict (login) do nothing
+        """, nativeQuery = true)
+    int createIfMissing(@Param("login") String login);
+
+    @Modifying
+    @Query(value = """
+        update accounts
+        set balance = balance + :amount
+        where login = :login
+        """, nativeQuery = true)
+    int deposit(@Param("login") String login, @Param("amount") int amount);
+
+    @Modifying
+    @Query(value = """
+        update accounts
+        set balance = balance - :amount
+        where login = :login
+          and balance >= :amount
+        """, nativeQuery = true)
+    int withdrawIfEnough(@Param("login") String login, @Param("amount") int amount);
 }
