@@ -21,6 +21,7 @@ BANK_UI_VALID_REDIRECT_URIS="${BANK_UI_VALID_REDIRECT_URIS:-[\"${BANK_UI_REDIREC
 AUTHORITIES_MAPPER_NAME="${AUTHORITIES_MAPPER_NAME:-authorities}"
 ACCOUNTS_READ_ROLE="${ACCOUNTS_READ_ROLE:-accounts:read}"
 ACCOUNTS_WRITE_ROLE="${ACCOUNTS_WRITE_ROLE:-accounts:write}"
+CASH_WRITE_ROLE="${CASH_WRITE_ROLE:-cash:write}"
 
 
 get_client_uuid() {
@@ -151,7 +152,7 @@ BANK_USERS_GROUP_UUID="$(get_group_uuid "$BANK_USERS_GROUP_NAME")"
     -n >/dev/null 2>&1 || true
 
 
-for ROLE_NAME in "$ACCOUNTS_READ_ROLE" "$ACCOUNTS_WRITE_ROLE"
+for ROLE_NAME in "$ACCOUNTS_READ_ROLE" "$ACCOUNTS_WRITE_ROLE" "$CASH_WRITE_ROLE"
 do
     if ! /opt/keycloak/bin/kcadm.sh get "clients/$BANK_UI_CLIENT_UUID/roles/$ROLE_NAME" -r "$BANK_REALM" >/dev/null 2>&1; then
         /opt/keycloak/bin/kcadm.sh create "clients/$BANK_UI_CLIENT_UUID/roles" \

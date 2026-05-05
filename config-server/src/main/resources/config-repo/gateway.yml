@@ -4,3 +4,7 @@ spring:
       uri: lb://accounts
       predicates:
         - Path=/accounts/**
+    - id: cash-route
+      uri: lb://cash
+      predicates:
+        - Path=/cash/**

@@ -4,9 +4,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.ui.Model;
 import ru.yandex.practicum.bank.ui.domain.AccountDetails;
 import ru.yandex.practicum.bank.ui.domain.AccountListItem;
+import ru.yandex.practicum.bank.ui.domain.BalanceOperationStatus;
 import ru.yandex.practicum.bank.ui.domain.CashOperationType;
 import ru.yandex.practicum.bank.ui.domain.MessageType;
 import ru.yandex.practicum.bank.ui.integration.accounts.AccountsClient;
+import ru.yandex.practicum.bank.ui.integration.cash.CashClient;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -14,13 +16,16 @@ import java.util.List;
 @Service
 public class MainService {
     private final AccountsClient accountsClient;
+    private final CashClient cashClient;
     private final CurrentAccountService currentAccountService;
 
     public MainService(
         AccountsClient accountsClient,
+        CashClient cashClient,
         CurrentAccountService currentAccountService
     ) {
         this.accountsClient = accountsClient;
+        this.cashClient = cashClient;
         this.currentAccountService = currentAccountService;
     }
 
@@ -30,7 +35,17 @@ public class MainService {
     }
 
     public void performCashOperation(Model model, int amount, CashOperationType type) {
-        fillModel(model, "Операции с наличными пока не поддерживаются", MessageType.ERROR);
+        BalanceOperationStatus status = cashClient.performCashOperation(amount, type);
+        switch (status) {
+            case SUCCESS -> fillModel(model,
+                type == CashOperationType.DEPOSIT
+                    ? "Положено %d руб".formatted(amount)
+                    : "Снято %d руб".formatted(amount),
+                MessageType.SUCCESS);
+            case INSUFFICIENT_FUNDS -> fillModel(model, "Недостаточно средств на счету", MessageType.ERROR);
+            case PROCESSING -> fillModel(model, "Операция в обработке", MessageType.PENDING);
+            case ERROR -> fillModel(model, "Что-то пошло не так", MessageType.ERROR);
+        }
     }
 
     public void transfer(Model model, int amount, String login) {
