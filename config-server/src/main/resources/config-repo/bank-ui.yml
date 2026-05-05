@@ -1,0 +1,12 @@
+spring:
+  security.oauth2.client:
+    provider.keycloak:
+      issuer-uri: ${keycloak.issuer-uri}
+    registration.keycloak:
+      provider: keycloak
+      client-id: ${KEYCLOAK_BANK_UI_CLIENT_ID:bank-ui}
+      client-secret: ${KEYCLOAK_BANK_UI_CLIENT_SECRET:bank-ui-secret}
+      client-name: Keycloak
+      authorization-grant-type: authorization_code
+      redirect-uri: "{baseUrl}/login/oauth2/code/{registrationId}"
+      scope: openid, profile

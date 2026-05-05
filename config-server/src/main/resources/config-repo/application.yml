@@ -4,3 +4,8 @@ eureka:
     registry-fetch-interval-seconds: 10
   instance:
     lease-renewal-interval-in-seconds: 10
+
+keycloak:
+  realm: ${KEYCLOAK_BANK_REALM:bank}
+  base-url: ${KEYCLOAK_BASE_URL:http://host.docker.internal:8083}
+  issuer-uri: ${KEYCLOAK_ISSUER_URI:${keycloak.base-url}/realms/${keycloak.realm}}
