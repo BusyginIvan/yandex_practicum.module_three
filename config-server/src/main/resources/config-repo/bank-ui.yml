@@ -10,3 +10,6 @@ spring:
       authorization-grant-type: authorization_code
       redirect-uri: "{baseUrl}/login/oauth2/code/{registrationId}"
       scope: openid, profile
+
+integration:
+  accounts.base-url: ${ACCOUNTS_BASE_URL:http://gateway/accounts}

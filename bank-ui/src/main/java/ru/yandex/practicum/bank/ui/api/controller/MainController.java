@@ -33,8 +33,7 @@ public class MainController {
         @RequestParam("name") String name,
         @RequestParam("birthdate") LocalDate birthdate
     ) {
-        mainService.setNameAndBirthdate(name, birthdate);
-        mainService.fillModel(model, null, null);
+        mainService.setNameAndBirthdate(model, name, birthdate);
         return "main";
     }
 
