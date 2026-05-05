@@ -35,5 +35,6 @@
         <module>config-server</module>
         <module>eureka-server</module>
         <module>gateway</module>
+        <module>accounts</module>
     </modules>
 </project>

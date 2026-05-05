@@ -1,0 +1,6 @@
+spring:
+  cloud.gateway.routes:
+    - id: accounts-route
+      uri: lb://accounts
+      predicates:
+        - Path=/accounts/**

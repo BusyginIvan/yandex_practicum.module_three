@@ -1,0 +1,5 @@
+server.port: ${SERVER_PORT:8085}
+spring:
+  application.name: accounts
+  config.import: configserver:${CONFIG_SERVER_URL:http://config-server:8081}
+management.endpoints.web.exposure.include: health

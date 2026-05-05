@@ -93,6 +93,26 @@ services:
       timeout: 5s
       retries: 10
       start_period: 30s
+  accounts:
+    container_name: accounts
+    image: accounts
+    build:
+      context: .
+      dockerfile: accounts/Dockerfile
+    depends_on:
+      config-server:
+        condition: service_healthy
+      eureka-server:
+        condition: service_healthy
+    restart: on-failure
+    ports:
+      - "8085:8085"
+    healthcheck:
+      test: [ "CMD", "curl", "-fsS", "http://localhost:8085/actuator/health" ]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
 
 volumes:
   keycloak_data:
