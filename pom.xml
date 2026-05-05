@@ -36,5 +36,6 @@
         <module>eureka-server</module>
         <module>gateway</module>
         <module>accounts</module>
+        <module>cash</module>
     </modules>
 </project>
