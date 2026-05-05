@@ -1,5 +1,7 @@
 package ru.yandex.practicum.bank.accounts.api.controller;
 
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.Size;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -24,9 +26,17 @@ public class BalanceController {
 
     @PostMapping("/{login}/balance")
     public ResponseEntity<?> performBalanceOperation(
-        @PathVariable String login,
-        @RequestHeader("Operation-Id") String operationId,
-        @RequestBody BalanceOperationRequest request
+        @PathVariable
+        @Size(max = 255, message = "Login must not exceed 255 characters")
+        String login,
+
+        @RequestHeader("Operation-Id")
+        @Size(max = 255, message = "Operation-Id must not exceed 255 characters")
+        String operationId,
+
+        @Valid
+        @RequestBody
+        BalanceOperationRequest request
     ) {
         BalanceOperationResult result = balanceService.performBalanceOperation(
             login,

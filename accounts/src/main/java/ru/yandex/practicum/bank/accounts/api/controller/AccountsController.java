@@ -1,5 +1,6 @@
 package ru.yandex.practicum.bank.accounts.api.controller;
 
+import jakarta.validation.Valid;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -30,7 +31,7 @@ public class AccountsController {
 
     @PutMapping("/me")
     @PreAuthorize("hasAuthority('accounts:write')")
-    public Account updateMe(@RequestBody UpdateAccountRequest request) {
+    public Account updateMe(@Valid @RequestBody UpdateAccountRequest request) {
         return accountsService.updateCurrentAccount(request.name(), request.birthdate());
     }
 
