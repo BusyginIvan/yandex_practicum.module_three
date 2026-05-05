@@ -3,18 +3,25 @@ package ru.yandex.practicum.bank.ui.service;
 import org.springframework.stereotype.Service;
 import org.springframework.ui.Model;
 import ru.yandex.practicum.bank.ui.domain.AccountDetails;
+import ru.yandex.practicum.bank.ui.domain.AccountListItem;
 import ru.yandex.practicum.bank.ui.domain.CashOperationType;
 import ru.yandex.practicum.bank.ui.domain.MessageType;
 import ru.yandex.practicum.bank.ui.integration.accounts.AccountsClient;
 
 import java.time.LocalDate;
+import java.util.List;
 
 @Service
 public class MainService {
     private final AccountsClient accountsClient;
+    private final CurrentAccountService currentAccountService;
 
-    public MainService(AccountsClient accountsClient) {
+    public MainService(
+        AccountsClient accountsClient,
+        CurrentAccountService currentAccountService
+    ) {
         this.accountsClient = accountsClient;
+        this.currentAccountService = currentAccountService;
     }
 
     public void setNameAndBirthdate(Model model, String name, LocalDate birthdate) {
@@ -39,8 +46,16 @@ public class MainService {
         model.addAttribute("name", profile.nameOrEmpty());
         model.addAttribute("birthdate", profile.birthdateAsString());
         model.addAttribute("balance", profile.balance());
-        model.addAttribute("accounts", accountsClient.getAccounts());
+        model.addAttribute("accounts", getOtherAccounts());
         model.addAttribute("message", message);
         model.addAttribute("messageType", messageType);
+    }
+
+    private List<AccountListItem> getOtherAccounts() {
+        String currentLogin = currentAccountService.getCurrentLogin();
+        return accountsClient.getAccounts().stream()
+            .filter(account -> account.name() != null)
+            .filter(account -> !account.login().equals(currentLogin))
+            .toList();
     }
 }
