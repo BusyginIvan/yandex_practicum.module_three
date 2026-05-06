@@ -18,10 +18,14 @@ BANK_UI_BASE_URL="${BANK_UI_BASE_URL:-http://localhost:8080}"
 BANK_UI_REDIRECT_URI="${BANK_UI_REDIRECT_URI:-${BANK_UI_BASE_URL}/login/oauth2/code/keycloak}"
 BANK_UI_VALID_REDIRECT_URIS="${BANK_UI_VALID_REDIRECT_URIS:-[\"${BANK_UI_REDIRECT_URI}\",\"${BANK_UI_BASE_URL}\",\"${BANK_UI_BASE_URL}/*\"]}"
 
+CASH_CLIENT_ID="${CASH_CLIENT_ID:-cash}"
+CASH_CLIENT_SECRET="${CASH_CLIENT_SECRET:-cash-secret}"
+
 AUTHORITIES_MAPPER_NAME="${AUTHORITIES_MAPPER_NAME:-authorities}"
 ACCOUNTS_READ_ROLE="${ACCOUNTS_READ_ROLE:-accounts:read}"
 ACCOUNTS_WRITE_ROLE="${ACCOUNTS_WRITE_ROLE:-accounts:write}"
 CASH_WRITE_ROLE="${CASH_WRITE_ROLE:-cash:write}"
+ACCOUNTS_BALANCE_WRITE_ROLE="${ACCOUNTS_BALANCE_WRITE_ROLE:-accounts:balance:write}"
 
 
 get_client_uuid() {
@@ -69,6 +73,27 @@ ensure_authorities_mapper() {
     else
         echo "Protocol mapper '$AUTHORITIES_MAPPER_NAME' already exists for client '$CLIENT_ID'."
     fi
+}
+
+ensure_service_account_client_role() {
+    CLIENT_ID="$1"
+    CLIENT_UUID="$2"
+    ROLE_NAME="$3"
+
+    if ! /opt/keycloak/bin/kcadm.sh get "clients/$CLIENT_UUID/roles/$ROLE_NAME" -r "$BANK_REALM" >/dev/null 2>&1; then
+        /opt/keycloak/bin/kcadm.sh create "clients/$CLIENT_UUID/roles" \
+            -r "$BANK_REALM" \
+            -s name="$ROLE_NAME" >/dev/null
+        echo "Created client role '$ROLE_NAME'."
+    else
+        echo "Client role '$ROLE_NAME' already exists."
+    fi
+
+    /opt/keycloak/bin/kcadm.sh add-roles \
+        -r "$BANK_REALM" \
+        --uusername "service-account-$CLIENT_ID" \
+        --cclientid "$CLIENT_ID" \
+        --rolename "$ROLE_NAME" >/dev/null 2>&1 || true
 }
 
 
@@ -134,6 +159,30 @@ fi
 BANK_UI_CLIENT_UUID="$(get_client_uuid "$BANK_UI_CLIENT_ID")"
 
 
+CASH_CLIENT_UUID="$(get_client_uuid "$CASH_CLIENT_ID")"
+
+if [ -z "$CASH_CLIENT_UUID" ]; then
+    /opt/keycloak/bin/kcadm.sh create clients -r "$BANK_REALM" \
+        -s enabled=true \
+        -s protocol=openid-connect \
+        -s clientId="$CASH_CLIENT_ID" \
+        -s name="Cash service client" \
+        -s publicClient=false \
+        -s secret="$CASH_CLIENT_SECRET" \
+        -s standardFlowEnabled=false \
+        -s directAccessGrantsEnabled=false \
+        -s implicitFlowEnabled=false \
+        -s serviceAccountsEnabled=true \
+        -s frontchannelLogout=false >/dev/null
+
+    echo "Created client '$CASH_CLIENT_ID'."
+else
+    echo "Client '$CASH_CLIENT_ID' already exists. Skipping creation."
+fi
+
+CASH_CLIENT_UUID="$(get_client_uuid "$CASH_CLIENT_ID")"
+
+
 BANK_USERS_GROUP_UUID="$(get_group_uuid "$BANK_USERS_GROUP_NAME")"
 
 if [ -z "$BANK_USERS_GROUP_UUID" ]; then
@@ -171,7 +220,17 @@ do
 done
 
 
+for ROLE_NAME in "$ACCOUNTS_BALANCE_WRITE_ROLE"
+do
+    ensure_service_account_client_role \
+        "$CASH_CLIENT_ID" \
+        "$CASH_CLIENT_UUID" \
+        "$ROLE_NAME"
+done
+
+
 ensure_authorities_mapper "$BANK_UI_CLIENT_ID" "$BANK_UI_CLIENT_UUID"
+ensure_authorities_mapper "$CASH_CLIENT_ID" "$CASH_CLIENT_UUID"
 
 
 wait "$KEYCLOAK_PID"

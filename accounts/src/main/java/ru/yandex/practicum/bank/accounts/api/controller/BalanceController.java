@@ -3,6 +3,7 @@ package ru.yandex.practicum.bank.accounts.api.controller;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Size;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -25,6 +26,7 @@ public class BalanceController {
     }
 
     @PostMapping("/{login}/balance")
+    @PreAuthorize("hasAuthority('accounts:balance:write')")
     public ResponseEntity<?> performBalanceOperation(
         @PathVariable
         @Size(max = 255, message = "Login must not exceed 255 characters")

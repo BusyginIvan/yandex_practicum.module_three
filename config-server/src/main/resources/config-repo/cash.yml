@@ -7,6 +7,14 @@ spring:
   sql.init.mode: never  # never, always
   security.oauth2:
     resourceserver.jwt.issuer-uri: ${keycloak.issuer-uri}
+    client:
+      provider.keycloak:
+        issuer-uri: ${keycloak.issuer-uri}
+      registration.cash:
+        provider: keycloak
+        authorization-grant-type: client_credentials
+        client-id: ${KEYCLOAK_CASH_CLIENT_ID:cash}
+        client-secret: ${KEYCLOAK_CASH_CLIENT_SECRET:cash-secret}
 
 integration:
   accounts.base-url: ${ACCOUNTS_BASE_URL:http://accounts/accounts}
