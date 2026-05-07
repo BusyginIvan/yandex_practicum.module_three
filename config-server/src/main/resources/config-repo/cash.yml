@@ -23,3 +23,6 @@ cash:
   retry:
     fixed-delay-ms: 5000
     batch-size: 50
+  cleanup:
+    cron: 0 0 12 * * *
+    batch-size: 500
