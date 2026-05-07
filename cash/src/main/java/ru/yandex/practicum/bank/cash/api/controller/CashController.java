@@ -1,5 +1,6 @@
 package ru.yandex.practicum.bank.cash.api.controller;
 
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -23,7 +24,7 @@ public class CashController {
 
     @PostMapping
     @PreAuthorize("hasAuthority('cash:write')")
-    public ResponseEntity<?> performCashOperation(@RequestBody CashOperationRequest request) {
+    public ResponseEntity<?> performCashOperation(@Valid @RequestBody CashOperationRequest request) {
         BalanceOperationResult result = cashService.performCashOperation(request.amount(), request.type());
         return switch (result) {
             case SUCCESS -> ResponseEntity.ok().build();
