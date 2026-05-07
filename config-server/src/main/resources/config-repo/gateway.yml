@@ -8,3 +8,7 @@ spring:
       uri: lb://cash
       predicates:
         - Path=/cash/**
+    - id: transfers-route
+      uri: lb://transfers
+      predicates:
+        - Path=/transfers/**

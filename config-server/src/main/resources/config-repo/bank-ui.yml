@@ -14,3 +14,4 @@ spring:
 integration:
   accounts.base-url: ${ACCOUNTS_BASE_URL:http://gateway/accounts}
   cash.base-url: ${CASH_BASE_URL:http://gateway/cash}
+  transfers.base-url: ${TRANSFERS_BASE_URL:http://gateway/transfers}

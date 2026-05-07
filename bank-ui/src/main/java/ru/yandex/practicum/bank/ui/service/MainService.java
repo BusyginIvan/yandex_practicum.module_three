@@ -9,6 +9,7 @@ import ru.yandex.practicum.bank.ui.domain.CashOperationType;
 import ru.yandex.practicum.bank.ui.domain.MessageType;
 import ru.yandex.practicum.bank.ui.integration.accounts.AccountsClient;
 import ru.yandex.practicum.bank.ui.integration.cash.CashClient;
+import ru.yandex.practicum.bank.ui.integration.transfers.TransfersClient;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -17,15 +18,18 @@ import java.util.List;
 public class MainService {
     private final AccountsClient accountsClient;
     private final CashClient cashClient;
+    private final TransfersClient transfersClient;
     private final CurrentAccountService currentAccountService;
 
     public MainService(
         AccountsClient accountsClient,
         CashClient cashClient,
+        TransfersClient transfersClient,
         CurrentAccountService currentAccountService
     ) {
         this.accountsClient = accountsClient;
         this.cashClient = cashClient;
+        this.transfersClient = transfersClient;
         this.currentAccountService = currentAccountService;
     }
 
@@ -49,7 +53,15 @@ public class MainService {
     }
 
     public void transfer(Model model, int amount, String login) {
-        fillModel(model, "Переводы пока не поддерживаются", MessageType.ERROR);
+        BalanceOperationStatus status = transfersClient.transfer(amount, login);
+        switch (status) {
+            case SUCCESS -> fillModel(model,
+                "Перевод на %d руб пользователю %s выполнен".formatted(amount, login),
+                MessageType.SUCCESS);
+            case INSUFFICIENT_FUNDS -> fillModel(model, "Недостаточно средств на счету", MessageType.ERROR);
+            case PROCESSING -> fillModel(model, "Перевод в обработке", MessageType.PENDING);
+            case ERROR -> fillModel(model, "Что-то пошло не так", MessageType.ERROR);
+        }
     }
 
     public void fillModel(Model model, String message, MessageType messageType) {
