@@ -9,6 +9,7 @@ ADMIN_PASSWORD="${KC_BOOTSTRAP_ADMIN_PASSWORD:?KC_BOOTSTRAP_ADMIN_PASSWORD is re
 BANK_REALM="${BANK_REALM:-bank}"
 BANK_REALM_DISPLAY_NAME="${BANK_REALM_DISPLAY_NAME:-Bank}"
 
+BANK_USERS_GROUP_NAME="${BANK_USERS_GROUP_NAME:-bank-users}"
 USER_PROFILE_ATTRIBUTES_PATH="${USER_PROFILE_ATTRIBUTES_PATH:-/opt/keycloak/init/user-profile-attributes.json}"
 
 BANK_UI_CLIENT_ID="${BANK_UI_CLIENT_ID:-bank-ui}"
@@ -16,6 +17,10 @@ BANK_UI_CLIENT_SECRET="${BANK_UI_CLIENT_SECRET:-bank-ui-secret}"
 BANK_UI_BASE_URL="${BANK_UI_BASE_URL:-http://localhost:8080}"
 BANK_UI_REDIRECT_URI="${BANK_UI_REDIRECT_URI:-${BANK_UI_BASE_URL}/login/oauth2/code/keycloak}"
 BANK_UI_VALID_REDIRECT_URIS="${BANK_UI_VALID_REDIRECT_URIS:-[\"${BANK_UI_REDIRECT_URI}\",\"${BANK_UI_BASE_URL}\",\"${BANK_UI_BASE_URL}/*\"]}"
+
+AUTHORITIES_MAPPER_NAME="${AUTHORITIES_MAPPER_NAME:-authorities}"
+ACCOUNTS_READ_ROLE="${ACCOUNTS_READ_ROLE:-accounts:read}"
+ACCOUNTS_WRITE_ROLE="${ACCOUNTS_WRITE_ROLE:-accounts:write}"
 
 
 get_client_uuid() {
@@ -25,6 +30,44 @@ get_client_uuid() {
         --fields id \
         --format csv \
         --noquotes | tr -d '\r\n'
+}
+
+get_group_uuid() {
+    /opt/keycloak/bin/kcadm.sh get groups \
+        -r "$BANK_REALM" \
+        -q search="$1" \
+        -q exact=true \
+        --fields id \
+        --format csv \
+        --noquotes | tr -d '\r\n'
+}
+
+ensure_authorities_mapper() {
+    CLIENT_ID="$1"
+    CLIENT_UUID="$2"
+
+    if ! /opt/keycloak/bin/kcadm.sh get "clients/$CLIENT_UUID/protocol-mappers/models" \
+        -r "$BANK_REALM" \
+        --fields name \
+        --format csv \
+        --noquotes | grep -Fx "$AUTHORITIES_MAPPER_NAME" >/dev/null 2>&1; then
+        /opt/keycloak/bin/kcadm.sh create "clients/$CLIENT_UUID/protocol-mappers/models" \
+            -r "$BANK_REALM" \
+            -s name="$AUTHORITIES_MAPPER_NAME" \
+            -s protocol=openid-connect \
+            -s protocolMapper=oidc-usermodel-client-role-mapper \
+            -s consentRequired=false \
+            -s 'config."multivalued"="true"' \
+            -s 'config."userinfo.token.claim"="false"' \
+            -s 'config."id.token.claim"="false"' \
+            -s 'config."access.token.claim"="true"' \
+            -s 'config."claim.name"="authorities"' \
+            -s 'config."jsonType.label"="String"' \
+            -s 'config."usermodel.clientRoleMapping.clientId"="'"$CLIENT_ID"'"' >/dev/null
+        echo "Created protocol mapper '$AUTHORITIES_MAPPER_NAME' for client '$CLIENT_ID'."
+    else
+        echo "Protocol mapper '$AUTHORITIES_MAPPER_NAME' already exists for client '$CLIENT_ID'."
+    fi
 }
 
 
@@ -86,6 +129,48 @@ if [ -z "$BANK_UI_CLIENT_UUID" ]; then
 else
     echo "Client '$BANK_UI_CLIENT_ID' already exists. Skipping creation."
 fi
+
+BANK_UI_CLIENT_UUID="$(get_client_uuid "$BANK_UI_CLIENT_ID")"
+
+
+BANK_USERS_GROUP_UUID="$(get_group_uuid "$BANK_USERS_GROUP_NAME")"
+
+if [ -z "$BANK_USERS_GROUP_UUID" ]; then
+    /opt/keycloak/bin/kcadm.sh create groups \
+        -r "$BANK_REALM" \
+        -s name="$BANK_USERS_GROUP_NAME" >/dev/null
+    echo "Created group '$BANK_USERS_GROUP_NAME'."
+else
+    echo "Group '$BANK_USERS_GROUP_NAME' already exists."
+fi
+
+BANK_USERS_GROUP_UUID="$(get_group_uuid "$BANK_USERS_GROUP_NAME")"
+
+/opt/keycloak/bin/kcadm.sh update \
+    "realms/$BANK_REALM/default-groups/$BANK_USERS_GROUP_UUID" \
+    -n >/dev/null 2>&1 || true
+
+
+for ROLE_NAME in "$ACCOUNTS_READ_ROLE" "$ACCOUNTS_WRITE_ROLE"
+do
+    if ! /opt/keycloak/bin/kcadm.sh get "clients/$BANK_UI_CLIENT_UUID/roles/$ROLE_NAME" -r "$BANK_REALM" >/dev/null 2>&1; then
+        /opt/keycloak/bin/kcadm.sh create "clients/$BANK_UI_CLIENT_UUID/roles" \
+            -r "$BANK_REALM" \
+            -s name="$ROLE_NAME" >/dev/null
+        echo "Created client role '$ROLE_NAME'."
+    else
+        echo "Client role '$ROLE_NAME' already exists."
+    fi
+
+    /opt/keycloak/bin/kcadm.sh add-roles \
+        -r "$BANK_REALM" \
+        --gid "$BANK_USERS_GROUP_UUID" \
+        --cclientid "$BANK_UI_CLIENT_ID" \
+        --rolename "$ROLE_NAME" >/dev/null 2>&1 || true
+done
+
+
+ensure_authorities_mapper "$BANK_UI_CLIENT_ID" "$BANK_UI_CLIENT_UUID"
 
 
 wait "$KEYCLOAK_PID"

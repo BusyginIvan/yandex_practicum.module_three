@@ -1,5 +1,6 @@
 package ru.yandex.practicum.bank.accounts.api.controller;
 
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -22,16 +23,19 @@ public class AccountsController {
     }
 
     @GetMapping("/me")
+    @PreAuthorize("hasAuthority('accounts:read')")
     public Account getMe() {
         return accountsService.getCurrentAccount();
     }
 
     @PutMapping("/me")
+    @PreAuthorize("hasAuthority('accounts:write')")
     public Account updateMe(@RequestBody UpdateAccountRequest request) {
         return accountsService.updateCurrentAccount(request.name(), request.birthdate());
     }
 
     @GetMapping("/list")
+    @PreAuthorize("hasAuthority('accounts:read')")
     public List<AccountListItem> getList() {
         return accountsService.getAccounts();
     }
