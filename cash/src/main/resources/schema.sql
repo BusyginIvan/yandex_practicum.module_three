@@ -10,3 +10,6 @@ create table if not exists cash_operations (
     created_at timestamp with time zone not null,
     updated_at timestamp with time zone not null
 );
+
+create index if not exists idx_cash_operations_stage_created_at
+    on cash_operations (stage, created_at);
