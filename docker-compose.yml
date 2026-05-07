@@ -149,6 +149,28 @@ services:
       timeout: 5s
       retries: 10
       start_period: 30s
+  transfers:
+    container_name: transfers
+    image: transfers
+    build:
+      context: .
+      dockerfile: transfers/Dockerfile
+    depends_on:
+      config-server:
+        condition: service_healthy
+      eureka-server:
+        condition: service_healthy
+      keycloak:
+        condition: service_healthy
+    restart: on-failure
+    ports:
+      - "8087:8087"
+    healthcheck:
+      test: [ "CMD", "curl", "-fsS", "http://localhost:8087/actuator/health" ]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
   postgres:
     container_name: postgres
     image: postgres:17
