@@ -18,3 +18,8 @@ spring:
 
 integration:
   accounts.base-url: ${ACCOUNTS_BASE_URL:http://accounts/accounts}
+
+transfers:
+  retry:
+    fixed-delay-ms: 5000
+    batch-size: 50
