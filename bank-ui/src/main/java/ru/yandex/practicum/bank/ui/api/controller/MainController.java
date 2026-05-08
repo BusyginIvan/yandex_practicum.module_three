@@ -1,5 +1,9 @@
 package ru.yandex.practicum.bank.ui.api.controller;
 
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Past;
+import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.Size;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -30,8 +34,14 @@ public class MainController {
     @PostMapping("/account")
     public String editAccount(
         Model model,
-        @RequestParam("name") String name,
-        @RequestParam("birthdate") LocalDate birthdate
+
+        @RequestParam("name")
+        @Size(max = 255, message = "Name must not exceed 255 characters")
+        String name,
+
+        @RequestParam("birthdate")
+        @Past(message = "Birthdate must be in the past")
+        LocalDate birthdate
     ) {
         mainService.setNameAndBirthdate(model, name, birthdate);
         return "main";
@@ -40,8 +50,14 @@ public class MainController {
     @PostMapping("/cash")
     public String performCashOperation(
         Model model,
-        @RequestParam("amount") int amount,
-        @RequestParam("action") CashOperationType action
+
+        @RequestParam("amount")
+        @Positive(message = "Amount must be greater than zero")
+        int amount,
+
+        @RequestParam("action")
+        @NotNull(message = "Action must not be null")
+        CashOperationType action
     ) {
         mainService.performCashOperation(model, amount, action);
         return "main";
@@ -50,8 +66,14 @@ public class MainController {
     @PostMapping("/transfer")
     public String transfer(
         Model model,
-        @RequestParam("amount") int amount,
-        @RequestParam("login") String login
+
+        @RequestParam("amount")
+        @Positive(message = "Amount must be greater than zero")
+        int amount,
+
+        @RequestParam("login")
+        @Size(max = 255, message = "Login must not exceed 255 characters")
+        String login
     ) {
         mainService.transfer(model, amount, login);
         return "main";
