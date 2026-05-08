@@ -21,10 +21,14 @@ BANK_UI_VALID_REDIRECT_URIS="${BANK_UI_VALID_REDIRECT_URIS:-[\"${BANK_UI_REDIREC
 CASH_CLIENT_ID="${CASH_CLIENT_ID:-cash}"
 CASH_CLIENT_SECRET="${CASH_CLIENT_SECRET:-cash-secret}"
 
+TRANSFERS_CLIENT_ID="${TRANSFERS_CLIENT_ID:-transfers}"
+TRANSFERS_CLIENT_SECRET="${TRANSFERS_CLIENT_SECRET:-transfers-secret}"
+
 AUTHORITIES_MAPPER_NAME="${AUTHORITIES_MAPPER_NAME:-authorities}"
 ACCOUNTS_READ_ROLE="${ACCOUNTS_READ_ROLE:-accounts:read}"
 ACCOUNTS_WRITE_ROLE="${ACCOUNTS_WRITE_ROLE:-accounts:write}"
 CASH_WRITE_ROLE="${CASH_WRITE_ROLE:-cash:write}"
+TRANSFERS_WRITE_ROLE="${TRANSFERS_WRITE_ROLE:-transfers:write}"
 ACCOUNTS_BALANCE_WRITE_ROLE="${ACCOUNTS_BALANCE_WRITE_ROLE:-accounts:balance:write}"
 
 
@@ -183,6 +187,30 @@ fi
 CASH_CLIENT_UUID="$(get_client_uuid "$CASH_CLIENT_ID")"
 
 
+TRANSFERS_CLIENT_UUID="$(get_client_uuid "$TRANSFERS_CLIENT_ID")"
+
+if [ -z "$TRANSFERS_CLIENT_UUID" ]; then
+    /opt/keycloak/bin/kcadm.sh create clients -r "$BANK_REALM" \
+        -s enabled=true \
+        -s protocol=openid-connect \
+        -s clientId="$TRANSFERS_CLIENT_ID" \
+        -s name="Transfers service client" \
+        -s publicClient=false \
+        -s secret="$TRANSFERS_CLIENT_SECRET" \
+        -s standardFlowEnabled=false \
+        -s directAccessGrantsEnabled=false \
+        -s implicitFlowEnabled=false \
+        -s serviceAccountsEnabled=true \
+        -s frontchannelLogout=false >/dev/null
+
+    echo "Created client '$TRANSFERS_CLIENT_ID'."
+else
+    echo "Client '$TRANSFERS_CLIENT_ID' already exists. Skipping creation."
+fi
+
+TRANSFERS_CLIENT_UUID="$(get_client_uuid "$TRANSFERS_CLIENT_ID")"
+
+
 BANK_USERS_GROUP_UUID="$(get_group_uuid "$BANK_USERS_GROUP_NAME")"
 
 if [ -z "$BANK_USERS_GROUP_UUID" ]; then
@@ -201,7 +229,7 @@ BANK_USERS_GROUP_UUID="$(get_group_uuid "$BANK_USERS_GROUP_NAME")"
     -n >/dev/null 2>&1 || true
 
 
-for ROLE_NAME in "$ACCOUNTS_READ_ROLE" "$ACCOUNTS_WRITE_ROLE" "$CASH_WRITE_ROLE"
+for ROLE_NAME in "$ACCOUNTS_READ_ROLE" "$ACCOUNTS_WRITE_ROLE" "$CASH_WRITE_ROLE" "$TRANSFERS_WRITE_ROLE"
 do
     if ! /opt/keycloak/bin/kcadm.sh get "clients/$BANK_UI_CLIENT_UUID/roles/$ROLE_NAME" -r "$BANK_REALM" >/dev/null 2>&1; then
         /opt/keycloak/bin/kcadm.sh create "clients/$BANK_UI_CLIENT_UUID/roles" \
@@ -229,8 +257,18 @@ do
 done
 
 
+for ROLE_NAME in "$ACCOUNTS_BALANCE_WRITE_ROLE"
+do
+    ensure_service_account_client_role \
+        "$TRANSFERS_CLIENT_ID" \
+        "$TRANSFERS_CLIENT_UUID" \
+        "$ROLE_NAME"
+done
+
+
 ensure_authorities_mapper "$BANK_UI_CLIENT_ID" "$BANK_UI_CLIENT_UUID"
 ensure_authorities_mapper "$CASH_CLIENT_ID" "$CASH_CLIENT_UUID"
+ensure_authorities_mapper "$TRANSFERS_CLIENT_ID" "$TRANSFERS_CLIENT_UUID"
 
 
 wait "$KEYCLOAK_PID"

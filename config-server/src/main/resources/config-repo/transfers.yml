@@ -1,3 +1,14 @@
 spring:
   security.oauth2:
     resourceserver.jwt.issuer-uri: ${keycloak.issuer-uri}
+    client:
+      provider.keycloak:
+        issuer-uri: ${keycloak.issuer-uri}
+      registration.transfers:
+        provider: keycloak
+        authorization-grant-type: client_credentials
+        client-id: ${KEYCLOAK_TRANSFERS_CLIENT_ID:transfers}
+        client-secret: ${KEYCLOAK_TRANSFERS_CLIENT_SECRET:transfers-secret}
+
+integration:
+  accounts.base-url: ${ACCOUNTS_BASE_URL:http://accounts/accounts}
