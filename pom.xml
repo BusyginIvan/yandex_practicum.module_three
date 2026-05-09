@@ -38,5 +38,6 @@
         <module>accounts</module>
         <module>cash</module>
         <module>transfers</module>
+        <module>notifications</module>
     </modules>
 </project>
