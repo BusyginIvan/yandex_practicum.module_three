@@ -30,6 +30,7 @@ ACCOUNTS_WRITE_ROLE="${ACCOUNTS_WRITE_ROLE:-accounts:write}"
 CASH_WRITE_ROLE="${CASH_WRITE_ROLE:-cash:write}"
 TRANSFERS_WRITE_ROLE="${TRANSFERS_WRITE_ROLE:-transfers:write}"
 ACCOUNTS_BALANCE_WRITE_ROLE="${ACCOUNTS_BALANCE_WRITE_ROLE:-accounts:balance:write}"
+NOTIFICATIONS_CASH_ROLE="${NOTIFICATIONS_CASH_ROLE:-notifications:cash}"
 
 
 get_client_uuid() {
@@ -248,7 +249,7 @@ do
 done
 
 
-for ROLE_NAME in "$ACCOUNTS_BALANCE_WRITE_ROLE"
+for ROLE_NAME in "$ACCOUNTS_BALANCE_WRITE_ROLE" "$NOTIFICATIONS_CASH_ROLE"
 do
     ensure_service_account_client_role \
         "$CASH_CLIENT_ID" \

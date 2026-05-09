@@ -13,6 +13,8 @@ import java.time.Instant;
 import java.util.List;
 
 public interface CashOperationRepository extends JpaRepository<CashOperationEntity, String> {
+    List<CashOperationEntity> findByStageOrderByCreatedAtAsc(CashOperationStage stage, Pageable pageable);
+
     @Query("""
         select o
         from CashOperationEntity o

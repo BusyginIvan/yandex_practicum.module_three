@@ -18,9 +18,13 @@ spring:
 
 integration:
   accounts.base-url: ${ACCOUNTS_BASE_URL:http://accounts/accounts}
+  notifications.base-url: ${NOTIFICATIONS_BASE_URL:http://notifications/notifications}
 
 cash:
   retry:
+    fixed-delay-ms: 5000
+    batch-size: 50
+  notifications:
     fixed-delay-ms: 5000
     batch-size: 50
   cleanup:
