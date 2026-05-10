@@ -31,4 +31,20 @@ public class NotificationsService {
             amount
         );
     }
+
+    public void sendTransferNotification(
+        String operationId,
+        String senderLogin,
+        String recipientLogin,
+        int amount
+    ) {
+        if (processedNotificationRepository.createIfMissing(operationId) == 0) return;
+
+        log.info(
+            "Notification for user {}: transferred {} rubles to user {}.",
+            senderLogin,
+            amount,
+            recipientLogin
+        );
+    }
 }

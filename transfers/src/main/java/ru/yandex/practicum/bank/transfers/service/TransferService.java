@@ -8,6 +8,7 @@ import ru.yandex.practicum.bank.transfers.domain.BalanceOperationType;
 import ru.yandex.practicum.bank.transfers.domain.TransferOperationResult;
 import ru.yandex.practicum.bank.transfers.domain.TransferOperationStage;
 import ru.yandex.practicum.bank.transfers.integration.accounts.AccountsClient;
+import ru.yandex.practicum.bank.transfers.integration.notifications.NotificationsClient;
 import ru.yandex.practicum.bank.transfers.persistence.entity.TransferOperationEntity;
 import ru.yandex.practicum.bank.transfers.persistence.repository.TransferOperationRepository;
 
@@ -18,15 +19,18 @@ public class TransferService {
     private static final Logger log = LoggerFactory.getLogger(TransferService.class);
 
     private final AccountsClient accountsClient;
+    private final NotificationsClient notificationsClient;
     private final TransferOperationRepository transferOperationRepository;
     private final CurrentAccountService currentAccountService;
 
     public TransferService(
         AccountsClient accountsClient,
+        NotificationsClient notificationsClient,
         TransferOperationRepository transferOperationRepository,
         CurrentAccountService currentAccountService
     ) {
         this.accountsClient = accountsClient;
+        this.notificationsClient = notificationsClient;
         this.transferOperationRepository = transferOperationRepository;
         this.currentAccountService = currentAccountService;
     }
@@ -87,11 +91,11 @@ public class TransferService {
             }
 
             try {
-                operation.setStage(TransferOperationStage.COMPLETED);
+                operation.setStage(TransferOperationStage.NOTIFICATION_PENDING);
                 transferOperationRepository.save(operation);
                 return TransferOperationResult.SUCCESS;
             } catch (Exception ex) {
-                log.error("Failed to persist completed transfer stage, operationId={}", operation.getOperationId(), ex);
+                log.error("Failed to persist transfer stage, operationId={}", operation.getOperationId(), ex);
                 return TransferOperationResult.ERROR;
             }
         }
@@ -100,5 +104,28 @@ public class TransferService {
             "Cannot process transfer operation: unexpected stage '%s' for operationId=%s"
                 .formatted(operation.getStage(), operation.getOperationId())
         );
+    }
+
+    public void sendNotification(TransferOperationEntity operation) {
+        if (operation.getStage() != TransferOperationStage.NOTIFICATION_PENDING) {
+            throw new IllegalStateException(
+                "Cannot send notification for transfer operation: unexpected stage '%s' for operationId=%s"
+                    .formatted(operation.getStage(), operation.getOperationId())
+            );
+        }
+
+        if (notificationsClient.sendTransferNotification(
+            operation.getOperationId(),
+            operation.getSenderLogin(),
+            operation.getRecipientLogin(),
+            operation.getAmount()
+        )) {
+            try {
+                operation.setStage(TransferOperationStage.COMPLETED);
+                transferOperationRepository.save(operation);
+            } catch (Exception ex) {
+                log.error("Failed to persist transfer stage, operationId={}", operation.getOperationId(), ex);
+            }
+        }
     }
 }

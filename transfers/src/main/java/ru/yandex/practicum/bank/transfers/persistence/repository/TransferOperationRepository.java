@@ -14,6 +14,8 @@ import java.util.Collection;
 import java.util.List;
 
 public interface TransferOperationRepository extends JpaRepository<TransferOperationEntity, String> {
+    List<TransferOperationEntity> findByStageOrderByCreatedAtAsc(TransferOperationStage stage, Pageable pageable);
+
     @Query("""
         select o
         from TransferOperationEntity o

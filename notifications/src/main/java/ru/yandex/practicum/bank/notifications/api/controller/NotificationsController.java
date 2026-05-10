@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import ru.yandex.practicum.bank.notifications.api.model.CashNotificationRequest;
+import ru.yandex.practicum.bank.notifications.api.model.TransferNotificationRequest;
 import ru.yandex.practicum.bank.notifications.service.NotificationsService;
 
 @RestController
@@ -28,6 +29,20 @@ public class NotificationsController {
             operationId,
             request.login(),
             request.type(),
+            request.amount()
+        );
+    }
+
+    @PostMapping("/transfer")
+    @PreAuthorize("hasAuthority('notifications:transfer')")
+    public void sendTransferNotification(
+        @RequestHeader("Operation-Id") String operationId,
+        @RequestBody TransferNotificationRequest request
+    ) {
+        notificationsService.sendTransferNotification(
+            operationId,
+            request.senderLogin(),
+            request.recipientLogin(),
             request.amount()
         );
     }

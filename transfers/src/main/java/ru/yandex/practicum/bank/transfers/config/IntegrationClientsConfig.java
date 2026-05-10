@@ -40,6 +40,11 @@ public class IntegrationClientsConfig {
         return oauth2RestClient(baseUrl);
     }
 
+    @Bean
+    RestClient notificationsRestClient(@Value("${integration.notifications.base-url}") String baseUrl) {
+        return oauth2RestClient(baseUrl);
+    }
+
     private RestClient oauth2RestClient(String baseUrl) {
         OAuth2ClientHttpRequestInterceptor oauth2Interceptor =
             new OAuth2ClientHttpRequestInterceptor(authorizedClientManager);
