@@ -32,6 +32,12 @@ public class NotificationsService {
         );
     }
 
+    public void sendProfileUpdateNotification(String operationId, String login) {
+        if (processedNotificationRepository.createIfMissing(operationId) == 0) return;
+
+        log.info("Notification for user {}: profile details were updated.", login);
+    }
+
     public void sendTransferNotification(
         String operationId,
         String senderLogin,

@@ -24,6 +24,9 @@ CASH_CLIENT_SECRET="${CASH_CLIENT_SECRET:-cash-secret}"
 TRANSFERS_CLIENT_ID="${TRANSFERS_CLIENT_ID:-transfers}"
 TRANSFERS_CLIENT_SECRET="${TRANSFERS_CLIENT_SECRET:-transfers-secret}"
 
+ACCOUNTS_CLIENT_ID="${ACCOUNTS_CLIENT_ID:-accounts}"
+ACCOUNTS_CLIENT_SECRET="${ACCOUNTS_CLIENT_SECRET:-accounts-secret}"
+
 AUTHORITIES_MAPPER_NAME="${AUTHORITIES_MAPPER_NAME:-authorities}"
 ACCOUNTS_READ_ROLE="${ACCOUNTS_READ_ROLE:-accounts:read}"
 ACCOUNTS_WRITE_ROLE="${ACCOUNTS_WRITE_ROLE:-accounts:write}"
@@ -32,6 +35,7 @@ TRANSFERS_WRITE_ROLE="${TRANSFERS_WRITE_ROLE:-transfers:write}"
 ACCOUNTS_BALANCE_WRITE_ROLE="${ACCOUNTS_BALANCE_WRITE_ROLE:-accounts:balance:write}"
 NOTIFICATIONS_CASH_ROLE="${NOTIFICATIONS_CASH_ROLE:-notifications:cash}"
 NOTIFICATIONS_TRANSFER_ROLE="${NOTIFICATIONS_TRANSFER_ROLE:-notifications:transfer}"
+NOTIFICATIONS_PROFILE_ROLE="${NOTIFICATIONS_PROFILE_ROLE:-notifications:profile}"
 
 
 get_client_uuid() {
@@ -213,6 +217,30 @@ fi
 TRANSFERS_CLIENT_UUID="$(get_client_uuid "$TRANSFERS_CLIENT_ID")"
 
 
+ACCOUNTS_CLIENT_UUID="$(get_client_uuid "$ACCOUNTS_CLIENT_ID")"
+
+if [ -z "$ACCOUNTS_CLIENT_UUID" ]; then
+    /opt/keycloak/bin/kcadm.sh create clients -r "$BANK_REALM" \
+        -s enabled=true \
+        -s protocol=openid-connect \
+        -s clientId="$ACCOUNTS_CLIENT_ID" \
+        -s name="Accounts service client" \
+        -s publicClient=false \
+        -s secret="$ACCOUNTS_CLIENT_SECRET" \
+        -s standardFlowEnabled=false \
+        -s directAccessGrantsEnabled=false \
+        -s implicitFlowEnabled=false \
+        -s serviceAccountsEnabled=true \
+        -s frontchannelLogout=false >/dev/null
+
+    echo "Created client '$ACCOUNTS_CLIENT_ID'."
+else
+    echo "Client '$ACCOUNTS_CLIENT_ID' already exists. Skipping creation."
+fi
+
+ACCOUNTS_CLIENT_UUID="$(get_client_uuid "$ACCOUNTS_CLIENT_ID")"
+
+
 BANK_USERS_GROUP_UUID="$(get_group_uuid "$BANK_USERS_GROUP_NAME")"
 
 if [ -z "$BANK_USERS_GROUP_UUID" ]; then
@@ -268,9 +296,19 @@ do
 done
 
 
+for ROLE_NAME in "$NOTIFICATIONS_PROFILE_ROLE"
+do
+    ensure_service_account_client_role \
+        "$ACCOUNTS_CLIENT_ID" \
+        "$ACCOUNTS_CLIENT_UUID" \
+        "$ROLE_NAME"
+done
+
+
 ensure_authorities_mapper "$BANK_UI_CLIENT_ID" "$BANK_UI_CLIENT_UUID"
 ensure_authorities_mapper "$CASH_CLIENT_ID" "$CASH_CLIENT_UUID"
 ensure_authorities_mapper "$TRANSFERS_CLIENT_ID" "$TRANSFERS_CLIENT_UUID"
+ensure_authorities_mapper "$ACCOUNTS_CLIENT_ID" "$ACCOUNTS_CLIENT_UUID"
 
 
 wait "$KEYCLOAK_PID"

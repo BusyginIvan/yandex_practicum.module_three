@@ -7,3 +7,19 @@ spring:
   sql.init.mode: never  # never, always
   security.oauth2:
     resourceserver.jwt.issuer-uri: ${keycloak.issuer-uri}
+    client:
+      provider.keycloak:
+        issuer-uri: ${keycloak.issuer-uri}
+      registration.accounts:
+        provider: keycloak
+        authorization-grant-type: client_credentials
+        client-id: ${KEYCLOAK_ACCOUNTS_CLIENT_ID:accounts}
+        client-secret: ${KEYCLOAK_ACCOUNTS_CLIENT_SECRET:accounts-secret}
+
+integration:
+  notifications.base-url: ${NOTIFICATIONS_BASE_URL:http://notifications/notifications}
+
+accounts:
+  notifications:
+    fixed-delay-ms: 5000
+    batch-size: 50
