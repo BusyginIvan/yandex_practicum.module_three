@@ -7,10 +7,16 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import ru.yandex.practicum.bank.notifications.api.model.CashNotificationRequest;
+import ru.yandex.practicum.bank.notifications.service.NotificationsService;
 
 @RestController
 @RequestMapping("/notifications")
 public class NotificationsController {
+    private final NotificationsService notificationsService;
+
+    public NotificationsController(NotificationsService notificationsService) {
+        this.notificationsService = notificationsService;
+    }
 
     @PostMapping("/cash")
     @PreAuthorize("hasAuthority('notifications:cash')")
@@ -18,5 +24,11 @@ public class NotificationsController {
         @RequestHeader("Operation-Id") String operationId,
         @RequestBody CashNotificationRequest request
     ) {
+        notificationsService.sendCashOperationNotification(
+            operationId,
+            request.login(),
+            request.type(),
+            request.amount()
+        );
     }
 }
