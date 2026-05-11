@@ -1,5 +1,7 @@
 package ru.yandex.practicum.bank.notifications.api.controller;
 
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.Size;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -23,8 +25,13 @@ public class NotificationsController {
     @PostMapping("/cash")
     @PreAuthorize("hasAuthority('notifications:cash')")
     public void sendCashOperationNotification(
-        @RequestHeader("Operation-Id") String operationId,
-        @RequestBody CashNotificationRequest request
+        @RequestHeader("Operation-Id")
+        @Size(max = 255, message = "Operation-Id must not exceed 255 characters")
+        String operationId,
+
+        @Valid
+        @RequestBody
+        CashNotificationRequest request
     ) {
         notificationsService.sendCashOperationNotification(
             operationId,
@@ -37,8 +44,13 @@ public class NotificationsController {
     @PostMapping("/profile")
     @PreAuthorize("hasAuthority('notifications:profile')")
     public void sendProfileUpdateNotification(
-        @RequestHeader("Operation-Id") String operationId,
-        @RequestBody ProfileNotificationRequest request
+        @RequestHeader("Operation-Id")
+        @Size(max = 255, message = "Operation-Id must not exceed 255 characters")
+        String operationId,
+
+        @Valid
+        @RequestBody
+        ProfileNotificationRequest request
     ) {
         notificationsService.sendProfileUpdateNotification(operationId, request.login());
     }
@@ -46,8 +58,13 @@ public class NotificationsController {
     @PostMapping("/transfer")
     @PreAuthorize("hasAuthority('notifications:transfer')")
     public void sendTransferNotification(
-        @RequestHeader("Operation-Id") String operationId,
-        @RequestBody TransferNotificationRequest request
+        @RequestHeader("Operation-Id")
+        @Size(max = 255, message = "Operation-Id must not exceed 255 characters")
+        String operationId,
+
+        @Valid
+        @RequestBody
+        TransferNotificationRequest request
     ) {
         notificationsService.sendTransferNotification(
             operationId,
