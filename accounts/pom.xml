@@ -13,6 +13,10 @@
     <artifactId>accounts</artifactId>
     <name>Accounts</name>
 
+    <properties>
+        <spring-cloud-contract.version>4.3.0</spring-cloud-contract.version>
+    </properties>
+
     <dependencies>
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -76,7 +80,13 @@
         <dependency>
             <groupId>org.springframework.cloud</groupId>
             <artifactId>spring-cloud-starter-contract-stub-runner</artifactId>
-            <version>4.3.0</version>
+            <version>${spring-cloud-contract.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-starter-contract-verifier</artifactId>
+            <version>${spring-cloud-contract.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -91,6 +101,19 @@
         <plugin>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-maven-plugin</artifactId>
+        </plugin>
+        <plugin>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-contract-maven-plugin</artifactId>
+            <version>${spring-cloud-contract.version}</version>
+            <extensions>true</extensions>
+            <configuration>
+                <baseClassForTests>
+                    ru.yandex.practicum.bank.accounts.api.controller.BaseAccountsContractTest
+                </baseClassForTests>
+                <testFramework>JUNIT5</testFramework>
+                <testMode>MOCKMVC</testMode>
+            </configuration>
         </plugin>
     </plugins></build>
 </project>
