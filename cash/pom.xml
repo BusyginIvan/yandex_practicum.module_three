@@ -13,6 +13,10 @@
     <artifactId>cash</artifactId>
     <name>Cash Service</name>
 
+    <properties>
+        <spring-cloud-contract.version>4.3.0</spring-cloud-contract.version>
+    </properties>
+
     <dependencies>
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -69,9 +73,20 @@
             <scope>test</scope>
         </dependency>
         <dependency>
+            <groupId>org.springframework.security</groupId>
+            <artifactId>spring-security-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
             <groupId>org.springframework.cloud</groupId>
             <artifactId>spring-cloud-starter-contract-stub-runner</artifactId>
-            <version>4.3.0</version>
+            <version>${spring-cloud-contract.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-starter-contract-verifier</artifactId>
+            <version>${spring-cloud-contract.version}</version>
             <scope>test</scope>
         </dependency>
     </dependencies>
@@ -80,6 +95,19 @@
         <plugin>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-maven-plugin</artifactId>
+        </plugin>
+        <plugin>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-contract-maven-plugin</artifactId>
+            <version>${spring-cloud-contract.version}</version>
+            <extensions>true</extensions>
+            <configuration>
+                <baseClassForTests>
+                    ru.yandex.practicum.bank.cash.api.controller.BaseCashContractTest
+                </baseClassForTests>
+                <testFramework>JUNIT5</testFramework>
+                <testMode>MOCKMVC</testMode>
+            </configuration>
         </plugin>
     </plugins></build>
 </project>
