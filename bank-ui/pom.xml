@@ -13,6 +13,10 @@
 	<artifactId>bank-ui</artifactId>
 	<name>Bank UI</name>
 
+	<properties>
+		<spring-cloud-contract.version>4.3.0</spring-cloud-contract.version>
+	</properties>
+
 	<dependencies>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
@@ -49,6 +53,17 @@
 		<dependency>
 			<groupId>org.springframework.cloud</groupId>
 			<artifactId>spring-cloud-starter-loadbalancer</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-test</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.cloud</groupId>
+			<artifactId>spring-cloud-starter-contract-stub-runner</artifactId>
+			<version>${spring-cloud-contract.version}</version>
+			<scope>test</scope>
 		</dependency>
 	</dependencies>
 
