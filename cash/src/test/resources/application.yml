@@ -3,5 +3,7 @@ spring:
     config.enabled: false
     discovery.enabled: false
   config.import: "optional:configserver:"
+  sql.init.mode: always
+  jpa.hibernate.ddl-auto: none
 
 eureka.client.enabled: false
