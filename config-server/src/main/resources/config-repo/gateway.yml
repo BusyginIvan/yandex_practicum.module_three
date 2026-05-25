@@ -1,0 +1,14 @@
+spring:
+  cloud.gateway.routes:
+    - id: accounts-route
+      uri: lb://accounts
+      predicates:
+        - Path=/accounts/**
+    - id: cash-route
+      uri: lb://cash
+      predicates:
+        - Path=/cash/**
+    - id: transfers-route
+      uri: lb://transfers
+      predicates:
+        - Path=/transfers/**

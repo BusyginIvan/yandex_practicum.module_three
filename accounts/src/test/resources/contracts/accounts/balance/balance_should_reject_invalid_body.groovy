@@ -1,0 +1,36 @@
+package contracts.accounts.balance
+
+import org.springframework.cloud.contract.spec.Contract
+
+Contract.make {
+    description 'Balance operation rejects an invalid request body'
+    name 'balance_should_reject_invalid_body'
+
+    request {
+        method POST()
+        url '/accounts/alice/balance'
+        headers {
+            contentType(applicationJson())
+            header 'Authorization', value(
+                consumer(regex('Bearer\\s+.+')),
+                producer('Bearer accounts-balance-write-token')
+            )
+            header 'Operation-Id', 'operation-1'
+        }
+        body(
+            type: 'DEPOSIT',
+            amount: 0
+        )
+    }
+
+    response {
+        status BAD_REQUEST()
+        headers {
+            contentType(applicationJson())
+        }
+        body(
+            code: 'BAD_REQUEST',
+            message: 'Amount must be greater than zero'
+        )
+    }
+}

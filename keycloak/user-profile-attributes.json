@@ -1,0 +1,39 @@
+{
+  "attributes": [
+    {
+      "name": "username",
+      "displayName": "${username}",
+      "validations": {
+        "length": { "min": 3, "max": 255 },
+        "username-prohibited-characters": {},
+        "up-username-not-idn-homograph": {}
+      },
+      "permissions": {
+        "view": ["admin", "user"],
+        "edit": ["admin", "user"]
+      },
+      "multivalued": false
+    },
+    {
+      "name": "email",
+      "permissions": {
+        "view": ["admin"],
+        "edit": ["admin"]
+      }
+    },
+    {
+      "name": "firstName",
+      "permissions": {
+        "view": ["admin"],
+        "edit": ["admin"]
+      }
+    },
+    {
+      "name": "lastName",
+      "permissions": {
+        "view": ["admin"],
+        "edit": ["admin"]
+      }
+    }
+  ]
+}

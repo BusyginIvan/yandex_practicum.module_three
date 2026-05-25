@@ -1,0 +1,14 @@
+spring:
+  datasource:
+    url: ${POSTGRES_URL}
+    username: ${POSTGRES_USER}
+    password: ${POSTGRES_PASSWORD}
+  jpa.hibernate.ddl-auto: validate
+  sql.init.mode: never  # never, always
+  security.oauth2:
+    resourceserver.jwt.issuer-uri: ${keycloak.issuer-uri}
+
+notifications:
+  cleanup:
+    cron: 0 0 12 * * *
+    batch-size: 500

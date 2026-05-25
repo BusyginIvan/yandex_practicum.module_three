@@ -1,0 +1,14 @@
+spring:
+  cloud:
+    config.enabled: false
+    discovery.enabled: false
+  config.import: ""
+  sql.init.mode: always
+  jpa.hibernate.ddl-auto: none
+
+eureka.client.enabled: false
+
+notifications:
+  cleanup:
+    cron: "0 0 * * * *"
+    batch-size: 100
