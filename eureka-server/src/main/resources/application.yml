@@ -1,7 +1,0 @@
-server.port: ${SERVER_PORT:8082}
-spring:
-  application.name: eureka-server
-management.endpoints.web.exposure.include: health
-eureka.client:
-  register-with-eureka: false
-  fetch-registry: false

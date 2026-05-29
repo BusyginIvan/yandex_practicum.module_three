@@ -1,6 +1,0 @@
-server.port: ${SERVER_PORT:8081}
-spring:
-  application.name: config-server
-  profiles.active: native
-  cloud.config.server.native.search-locations: classpath:/config-repo/
-management.endpoints.web.exposure.include: health

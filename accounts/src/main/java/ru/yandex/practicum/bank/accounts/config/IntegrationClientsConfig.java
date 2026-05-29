@@ -21,16 +21,13 @@ public class IntegrationClientsConfig {
             AuthorityUtils.createAuthorityList("ROLE_SYSTEM")
         );
 
-    private final RestClient.Builder loadBalancedRestClientBuilder;
     private final OAuth2AuthorizedClientManager authorizedClientManager;
     private final OAuth2AuthorizedClientService authorizedClientService;
 
     public IntegrationClientsConfig(
-        RestClient.Builder loadBalancedRestClientBuilder,
         OAuth2AuthorizedClientManager authorizedClientManager,
         OAuth2AuthorizedClientService authorizedClientService
     ) {
-        this.loadBalancedRestClientBuilder = loadBalancedRestClientBuilder;
         this.authorizedClientManager = authorizedClientManager;
         this.authorizedClientService = authorizedClientService;
     }
@@ -50,7 +47,7 @@ public class IntegrationClientsConfig {
             OAuth2ClientHttpRequestInterceptor.authorizationFailureHandler(authorizedClientService)
         );
 
-        return loadBalancedRestClientBuilder
+        return RestClient.builder()
             .baseUrl(baseUrl)
             .requestInterceptor(oauth2Interceptor)
             .build();

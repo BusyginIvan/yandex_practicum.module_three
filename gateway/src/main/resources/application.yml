@@ -1,5 +1,19 @@
 server.port: ${SERVER_PORT:8084}
+
+management.endpoints.web.exposure.include: health
+
 spring:
   application.name: gateway
-  config.import: configserver:${CONFIG_SERVER_URL:http://config-server:8081}
-management.endpoints.web.exposure.include: health
+  cloud.gateway.routes:
+    - id: accounts-route
+      uri: http://accounts:8085
+      predicates:
+        - Path=/accounts/**
+    - id: cash-route
+      uri: http://cash:8086
+      predicates:
+        - Path=/cash/**
+    - id: transfers-route
+      uri: http://transfers:8087
+      predicates:
+        - Path=/transfers/**
