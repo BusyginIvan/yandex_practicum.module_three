@@ -46,10 +46,8 @@ services:
       context: .
       dockerfile: gateway/Dockerfile
     restart: on-failure
-    ports:
-      - "8084:8084"
     healthcheck:
-      test: [ "CMD", "curl", "-fsS", "http://localhost:8084/actuator/health" ]
+      test: [ "CMD", "curl", "-fsS", "http://localhost:8080/actuator/health" ]
       interval: 5s
       timeout: 5s
       retries: 10
@@ -70,10 +68,8 @@ services:
       postgres:
         condition: service_healthy
     restart: on-failure
-    ports:
-      - "8085:8085"
     healthcheck:
-      test: [ "CMD", "curl", "-fsS", "http://localhost:8085/actuator/health" ]
+      test: [ "CMD", "curl", "-fsS", "http://localhost:8080/actuator/health" ]
       interval: 5s
       timeout: 5s
       retries: 10
@@ -94,10 +90,8 @@ services:
       postgres:
         condition: service_healthy
     restart: on-failure
-    ports:
-      - "8086:8086"
     healthcheck:
-      test: [ "CMD", "curl", "-fsS", "http://localhost:8086/actuator/health" ]
+      test: [ "CMD", "curl", "-fsS", "http://localhost:8080/actuator/health" ]
       interval: 5s
       timeout: 5s
       retries: 10
@@ -118,10 +112,8 @@ services:
       postgres:
         condition: service_healthy
     restart: on-failure
-    ports:
-      - "8087:8087"
     healthcheck:
-      test: [ "CMD", "curl", "-fsS", "http://localhost:8087/actuator/health" ]
+      test: [ "CMD", "curl", "-fsS", "http://localhost:8080/actuator/health" ]
       interval: 5s
       timeout: 5s
       retries: 10
@@ -142,10 +134,8 @@ services:
       postgres:
         condition: service_healthy
     restart: on-failure
-    ports:
-      - "8088:8088"
     healthcheck:
-      test: [ "CMD", "curl", "-fsS", "http://localhost:8088/actuator/health" ]
+      test: [ "CMD", "curl", "-fsS", "http://localhost:8080/actuator/health" ]
       interval: 5s
       timeout: 5s
       retries: 10

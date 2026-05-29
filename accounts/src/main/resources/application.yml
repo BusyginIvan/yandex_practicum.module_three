@@ -1,5 +1,3 @@
-server.port: ${SERVER_PORT:8085}
-
 management.endpoints.web.exposure.include: health
 
 keycloak:
@@ -27,7 +25,7 @@ spring:
         client-secret: ${KEYCLOAK_ACCOUNTS_CLIENT_SECRET:accounts-secret}
 
 integration:
-  notifications.base-url: ${NOTIFICATIONS_BASE_URL:http://notifications:8088/notifications}
+  notifications.base-url: ${NOTIFICATIONS_BASE_URL:http://notifications:8080/notifications}
 
 accounts:
   notifications:

@@ -1,5 +1,3 @@
-server.port: ${SERVER_PORT:8088}
-
 management.endpoints.web.exposure.include: health
 
 keycloak:

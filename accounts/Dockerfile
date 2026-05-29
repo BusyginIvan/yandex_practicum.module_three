@@ -4,5 +4,5 @@ RUN apt-get update \
     && rm -rf /var/lib/apt/lists/*
 WORKDIR /app
 COPY accounts/target/*.jar app.jar
-EXPOSE 8085
+EXPOSE 8080
 ENTRYPOINT ["java", "-jar", "app.jar"]
