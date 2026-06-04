@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: banking-platform-common-config
+data:
+  application.yml: |
+{{ tpl (.Files.Get "application.yml") . | indent 4 }}

@@ -1,0 +1,10 @@
+image:
+  repository: postgres
+  tag: "17"
+  pullPolicy: IfNotPresent
+
+service:
+  port: 5432
+
+persistence:
+  size: 1Gi

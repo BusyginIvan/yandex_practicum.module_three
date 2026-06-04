@@ -1,0 +1,18 @@
+replicaCount: 1
+
+image:
+  repository: bank-keycloak
+  tag: latest
+  pullPolicy: IfNotPresent
+
+containerPort: 8080
+
+service:
+  port: 80
+  targetPort: 8080
+
+probes:
+  path: /realms/master/.well-known/openid-configuration
+
+persistence:
+  size: 1Gi

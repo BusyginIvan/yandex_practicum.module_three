@@ -1,17 +1,15 @@
-management.endpoints.web.exposure.include: health
-
 spring:
   application.name: gateway
   cloud.gateway.routes:
     - id: accounts-route
-      uri: http://accounts:8080
+      uri: http://accounts
       predicates:
         - Path=/accounts/**
     - id: cash-route
-      uri: http://cash:8080
+      uri: http://cash
       predicates:
         - Path=/cash/**
     - id: transfers-route
-      uri: http://transfers:8080
+      uri: http://transfers
       predicates:
         - Path=/transfers/**

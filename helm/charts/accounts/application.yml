@@ -1,0 +1,31 @@
+spring:
+  application.name: accounts
+  datasource:
+    url: ${postgres.base-url}?currentSchema=accounts
+    username: ${POSTGRES_USER}
+    password: ${POSTGRES_PASSWORD}
+  jpa.hibernate.ddl-auto: validate
+  sql.init.mode: ${postgres.sql.init.mode:never}
+  security.oauth2:
+    resourceserver.jwt:
+      issuer-uri: ${keycloak.issuer-uri}
+      jwk-set-uri: ${keycloak.openid-connect-uri}/certs
+    client:
+      provider.keycloak:
+        token-uri: ${keycloak.openid-connect-uri}/token
+      registration.accounts:
+        provider: keycloak
+        authorization-grant-type: client_credentials
+        client-id: ${KEYCLOAK_ACCOUNTS_CLIENT_ID}
+        client-secret: ${KEYCLOAK_ACCOUNTS_CLIENT_SECRET}
+
+integration:
+  notifications.base-url: http://notifications/notifications
+
+accounts:
+  notifications:
+    fixed-delay-ms: 5000
+    batch-size: 50
+  cleanup:
+    cron: 0 0 12 * * *
+    batch-size: 500

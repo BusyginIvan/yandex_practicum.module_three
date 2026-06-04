@@ -1,0 +1,35 @@
+spring:
+  application.name: cash
+  datasource:
+    url: ${postgres.base-url}?currentSchema=cash
+    username: ${POSTGRES_USER}
+    password: ${POSTGRES_PASSWORD}
+  jpa.hibernate.ddl-auto: validate
+  sql.init.mode: ${postgres.sql.init.mode:never}
+  security.oauth2:
+    resourceserver.jwt:
+      issuer-uri: ${keycloak.issuer-uri}
+      jwk-set-uri: ${keycloak.openid-connect-uri}/certs
+    client:
+      provider.keycloak:
+        token-uri: ${keycloak.openid-connect-uri}/token
+      registration.cash:
+        provider: keycloak
+        authorization-grant-type: client_credentials
+        client-id: ${KEYCLOAK_CASH_CLIENT_ID}
+        client-secret: ${KEYCLOAK_CASH_CLIENT_SECRET}
+
+integration:
+  accounts.base-url: http://accounts/accounts
+  notifications.base-url: http://notifications/notifications
+
+cash:
+  retry:
+    fixed-delay-ms: 5000
+    batch-size: 50
+  notifications:
+    fixed-delay-ms: 5000
+    batch-size: 50
+  cleanup:
+    cron: 0 0 12 * * *
+    batch-size: 500

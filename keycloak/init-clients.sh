@@ -12,20 +12,19 @@ BANK_REALM_DISPLAY_NAME="${BANK_REALM_DISPLAY_NAME:-Bank}"
 BANK_USERS_GROUP_NAME="${BANK_USERS_GROUP_NAME:-bank-users}"
 USER_PROFILE_ATTRIBUTES_PATH="${USER_PROFILE_ATTRIBUTES_PATH:-/opt/keycloak/init/user-profile-attributes.json}"
 
-BANK_UI_CLIENT_ID="${BANK_UI_CLIENT_ID:-bank-ui}"
-BANK_UI_CLIENT_SECRET="${BANK_UI_CLIENT_SECRET:-bank-ui-secret}"
+BANK_UI_CLIENT_ID="${KEYCLOAK_BANK_UI_CLIENT_ID:-bank-ui}"
+BANK_UI_CLIENT_SECRET="${KEYCLOAK_BANK_UI_CLIENT_SECRET:-bank-ui-secret}"
 BANK_UI_BASE_URL="${BANK_UI_BASE_URL:-http://localhost:8080}"
 BANK_UI_REDIRECT_URI="${BANK_UI_REDIRECT_URI:-${BANK_UI_BASE_URL}/login/oauth2/code/keycloak}"
-BANK_UI_VALID_REDIRECT_URIS="${BANK_UI_VALID_REDIRECT_URIS:-[\"${BANK_UI_REDIRECT_URI}\",\"${BANK_UI_BASE_URL}\",\"${BANK_UI_BASE_URL}/*\"]}"
 
-CASH_CLIENT_ID="${CASH_CLIENT_ID:-cash}"
-CASH_CLIENT_SECRET="${CASH_CLIENT_SECRET:-cash-secret}"
+CASH_CLIENT_ID="${KEYCLOAK_CASH_CLIENT_ID:-cash}"
+CASH_CLIENT_SECRET="${KEYCLOAK_CASH_CLIENT_SECRET:-cash-secret}"
 
-TRANSFERS_CLIENT_ID="${TRANSFERS_CLIENT_ID:-transfers}"
-TRANSFERS_CLIENT_SECRET="${TRANSFERS_CLIENT_SECRET:-transfers-secret}"
+TRANSFERS_CLIENT_ID="${KEYCLOAK_TRANSFERS_CLIENT_ID:-transfers}"
+TRANSFERS_CLIENT_SECRET="${KEYCLOAK_TRANSFERS_CLIENT_SECRET:-transfers-secret}"
 
-ACCOUNTS_CLIENT_ID="${ACCOUNTS_CLIENT_ID:-accounts}"
-ACCOUNTS_CLIENT_SECRET="${ACCOUNTS_CLIENT_SECRET:-accounts-secret}"
+ACCOUNTS_CLIENT_ID="${KEYCLOAK_ACCOUNTS_CLIENT_ID:-accounts}"
+ACCOUNTS_CLIENT_SECRET="${KEYCLOAK_ACCOUNTS_CLIENT_SECRET:-accounts-secret}"
 
 AUTHORITIES_MAPPER_NAME="${AUTHORITIES_MAPPER_NAME:-authorities}"
 ACCOUNTS_READ_ROLE="${ACCOUNTS_READ_ROLE:-accounts:read}"
@@ -155,9 +154,9 @@ if [ -z "$BANK_UI_CLIENT_UUID" ]; then
         -s implicitFlowEnabled=false \
         -s serviceAccountsEnabled=false \
         -s frontchannelLogout=true \
-        -s "redirectUris=$BANK_UI_VALID_REDIRECT_URIS" \
+        -s "redirectUris=[\"$BANK_UI_REDIRECT_URI\"]" \
         -s 'webOrigins=["'"$BANK_UI_BASE_URL"'"]' \
-        -s 'attributes."post.logout.redirect.uris"="+"' \
+        -s 'attributes."post.logout.redirect.uris"="'"$BANK_UI_BASE_URL"'"' \
         -s rootUrl="$BANK_UI_BASE_URL" \
         -s baseUrl="$BANK_UI_BASE_URL" >/dev/null
 
