@@ -3,6 +3,6 @@ RUN apt-get update \
     && apt-get install -y --no-install-recommends curl \
     && rm -rf /var/lib/apt/lists/*
 WORKDIR /app
-COPY cash/target/*.jar app.jar
+COPY cash/target/cash.jar app.jar
 EXPOSE 8080
 ENTRYPOINT ["java", "-jar", "app.jar"]

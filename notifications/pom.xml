@@ -70,23 +70,26 @@
         </dependency>
     </dependencies>
 
-    <build><plugins>
-        <plugin>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-maven-plugin</artifactId>
-        </plugin>
-        <plugin>
-            <groupId>org.springframework.cloud</groupId>
-            <artifactId>spring-cloud-contract-maven-plugin</artifactId>
-            <version>${spring-cloud-contract.version}</version>
-            <extensions>true</extensions>
-            <configuration>
-                <baseClassForTests>
-                    ru.yandex.practicum.bank.notifications.contract.BaseNotificationsContractTest
-                </baseClassForTests>
-                <testFramework>JUNIT5</testFramework>
-                <testMode>MOCKMVC</testMode>
-            </configuration>
-        </plugin>
-    </plugins></build>
+    <build>
+        <finalName>notifications</finalName>
+        <plugins>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+            </plugin>
+            <plugin>
+                <groupId>org.springframework.cloud</groupId>
+                <artifactId>spring-cloud-contract-maven-plugin</artifactId>
+                <version>${spring-cloud-contract.version}</version>
+                <extensions>true</extensions>
+                <configuration>
+                    <baseClassForTests>
+                        ru.yandex.practicum.bank.notifications.contract.BaseNotificationsContractTest
+                    </baseClassForTests>
+                    <testFramework>JUNIT5</testFramework>
+                    <testMode>MOCKMVC</testMode>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
 </project>
