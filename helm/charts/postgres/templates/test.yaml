@@ -1,0 +1,18 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: postgres-test
+  annotations:
+    "helm.sh/hook": test
+    "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
+spec:
+  containers:
+    - name: pg-isready
+      image: postgres:17
+      envFrom:
+        - secretRef:
+            name: postgres-secret
+      command: ["sh", "-c"]
+      args:
+        - pg_isready -h postgres -p 5432 -U "$POSTGRES_USER" -d "$POSTGRES_DB"
+  restartPolicy: Never
