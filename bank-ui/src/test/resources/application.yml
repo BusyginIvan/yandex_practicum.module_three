@@ -1,0 +1,6 @@
+spring:
+  security.oauth2.client:
+    registration.keycloak:
+      client-id: bank-ui
+
+keycloak.logout-uri: http://localhost/logout
