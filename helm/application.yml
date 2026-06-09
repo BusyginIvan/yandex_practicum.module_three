@@ -1,0 +1,9 @@
+management.endpoints.web.exposure.include: health
+
+keycloak:
+  issuer-uri: {{ printf "http://%s:%v/realms/%s" .Values.global.externalHost .Values.global.nodePorts.keycloak .Values.global.keycloak.realm }}
+  openid-connect-uri: {{ printf "http://keycloak/realms/%s/protocol/openid-connect" .Values.global.keycloak.realm }}
+
+postgres:
+  base-url: {{ printf "jdbc:postgresql://%s:%v/%s" .Values.global.postgres.host .Values.global.postgres.port .Values.global.postgres.database }}
+  sql.init.mode: always  # never, always

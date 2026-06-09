@@ -1,245 +1,331 @@
 # Banking Platform
 
-Микросервисное приложение "Банк" на Spring Boot и Spring Cloud.
+Микросервисное приложение "Банк" на Spring Boot.
 
-Приложение состоит из фронта `bank-ui`, API Gateway, Service Discovery, Config Server и четырёх бизнес-сервисов:
-- `accounts`
-- `cash`
-- `transfers`
-- `notifications`
+Проект разворачивается в Kubernetes через Helm.  
+Конфигурация приложений хранится в Helm chart'ах и попадает в контейнеры через `ConfigMap` и `Secret`.
 
-Пользователь может:
-- просматривать и редактировать данные своего аккаунта;
-- пополнять счёт и снимать деньги;
-- переводить деньги другому пользователю.
+## Состав системы
+
+- `bank-ui` — пользовательский веб-интерфейс
+- `gateway` — единая точка входа во внутренние API
+- `accounts` — профиль и баланс
+- `cash` — пополнение и снятие денег
+- `transfers` — переводы
+- `notifications` — логирование уведомлений об операциях
+- `keycloak` — авторизация и аутентификация
+- `postgres` — общая база данных
 
 ## Технологии
 
 - Java 21
-- Maven (multimodule project)
+- Maven Wrapper
 - Spring Boot 3
-- Spring Cloud
-  - Spring Cloud Gateway
-  - Spring Cloud Config
-  - Eureka Client / Eureka Server
-  - Spring Cloud Contract
+- Spring Cloud Gateway
 - Spring Security + OAuth 2.0 / OIDC
 - Keycloak
-- Spring MVC / Thymeleaf (`bank-ui`)
+- Spring MVC / Thymeleaf
 - Spring Data JPA / Hibernate
 - PostgreSQL
+- Helm
+- Kubernetes
+- Docker Desktop
 - Testcontainers
-- JUnit 5 / Spring Boot Test / MockMvc / Mockito
-- Docker / Docker Compose
+- Spring Cloud Contract
+- JUnit 5 / MockMvc / Mockito
 
 ## Архитектура
 
-### Модули
+### Kubernetes
 
-- `bank-ui` — веб-интерфейс пользователя
-- `gateway` — единая точка входа во внутренние API
-- `config-server` — внешний конфиг для сервисов
-- `eureka-server` — service discovery
-- `accounts` — аккаунты и баланс
-- `cash` — пополнение и снятие денег
-- `transfers` — переводы между счетами
-- `notifications` — логирование уведомлений о произведённых операциях
-- `keycloak/` — инициализация realm/client'ов Keycloak
+- один namespace: `banking-platform`
+- один umbrella chart: `helm/`
+- три дочерних chart'а:
+  - `postgres`
+  - `keycloak`
+  - `apps` для `bank-ui`, `gateway`, `accounts`, `cash`, `transfers`, `notifications`
+- `postgres` разворачивается как `StatefulSet`
+- `bank-ui` и `keycloak` доступны снаружи через `NodePort`
 
-### Взаимодействие
+### Конфигурация
 
-- `bank-ui` ходит в backend только через `gateway`
-- backend-сервисы регистрируются в `eureka-server`
-- backend-сервисы получают конфиг из `config-server`
-- межсервисные вызовы защищены OAuth 2.0 Client Credentials Flow
-- пользовательская авторизация во фронте построена на Authorization Code Flow
+- общий конфиг для Spring-приложений: [helm/application.yml](helm/application.yml)
+- конфиги приложений: `helm/charts/apps/configs/*.yml`
+- общий `ConfigMap` создаётся в зонтичном чарте
+- service-specific `ConfigMap`-ы для приложений создаются в чарте `apps`
+- секреты задаются в `helm/values.secrets.yaml`
 
 ### База данных
 
-Используется одна PostgreSQL-база, но сервисы разделены по схемам:
+Используется одна PostgreSQL-база `bank`, разделённая по схемам:
+
 - `accounts`
 - `cash`
 - `transfers`
 - `notifications`
 
-## Порты
+## Требования
 
-При запуске через `docker-compose.yml` используются:
+- Docker Desktop
+- включённый Kubernetes в Docker Desktop
+- `helm`
+- `task` (опционально)
 
-- `8080` — `bank-ui`
-- `8081` — `config-server`
-- `8082` — `eureka-server`
-- `8083` — `keycloak`
-- `8084` — `gateway`
-- `8085` — `accounts`
-- `8086` — `cash`
-- `8087` — `transfers`
-- `8088` — `notifications`
-- `5432` — PostgreSQL
+Используйте Docker Desktop Kubernetes с provisioner = kubeadm. С kind NodePort-доступ через localhost:30080 и localhost:30081 может не работать.
 
-## Требования для запуска
+## Установка инструментов
 
-- JDK 21
-- Docker Desktop / Docker Engine
+### Docker Desktop
 
-## Запуск через Docker Compose
+Установить Docker Desktop:  
+<https://www.docker.com/products/docker-desktop/>
 
-### 1. Подготовить `.env`
+В настройках Docker Desktop:
 
-Скопируйте `.env.example` в `.env`:
+1. открыть `Settings -> Kubernetes`
+2. включить `Enable Kubernetes`
+3. выбрать **`kubeadm`**
+4. дождаться, пока кластер поднимется
 
-```bash
-cp .env.example .env
-```
-
-Для Windows PowerShell:
-
-```powershell
-Copy-Item .env.example .env
-```
-
-По умолчанию там уже есть рабочие значения для локального запуска, но при желании, к примеру, можно поменять пароли.
-
-### 2. На первом запуске включить SQL-инициализацию
-
-Перед самым первым запуском поменяйте `spring.sql.init.mode` с `never` на `always` в:
-
-- [config-server/src/main/resources/config-repo/accounts.yml](config-server/src/main/resources/config-repo/accounts.yml)
-- [config-server/src/main/resources/config-repo/cash.yml](config-server/src/main/resources/config-repo/cash.yml)
-- [config-server/src/main/resources/config-repo/transfers.yml](config-server/src/main/resources/config-repo/transfers.yml)
-- [config-server/src/main/resources/config-repo/notifications.yml](config-server/src/main/resources/config-repo/notifications.yml)
-
-После того как таблицы и схемы будут созданы, можно вернуть значения обратно на `never`.
-
-### 3. Собрать jar-файлы
+Проверка:
 
 ```bash
-./mvnw clean package -DskipTests
+kubectl get nodes
 ```
 
-Для Windows PowerShell:
+### Helm
 
-```powershell
-.\mvnw.cmd clean package -DskipTests
-```
+Если `helm` не установлен, поставить его любым удобным способом.
 
-### 4. Поднять систему
+**Windows:**
 
 ```bash
-docker compose up --build -d
+winget install Helm.Helm
 ```
 
-После старта приложение будет доступно по адресу:
+**macOS:**
+
+```bash
+brew install helm
+```
+
+**Linux:**
+
+```bash
+sudo snap install helm --classic
+```
+
+Если ни один из этих вариантов не подходит, можно поставить `helm` по официальной инструкции:  
+<https://helm.sh/docs/intro/install/>
+
+Проверка:
+
+```bash
+helm version
+```
+
+### Task
+
+`Task` нужен для команд из `Taskfile.yml`.
+
+**Windows:**
+
+```bash
+winget install Task.Task
+```
+
+**macOS:**
+
+```bash
+brew install go-task/tap/go-task
+```
+
+**Linux:**
+
+```bash
+sudo snap install task --classic
+```
+
+Если ни один из этих вариантов не подходит, можно поставить `Task` по официальной инструкции:  
+<https://taskfile.dev/docs/installation>
+
+Проверка:
+
+```bash
+task --version
+```
+
+## Подготовка секретов
+
+Нужно создать локальный файл:
 
 ```text
-http://localhost:8080
+helm/values.secrets.yaml
 ```
 
-## Локальный запуск без Docker Compose
+Для этого можно скопировать и переименовать шаблон [helm/values.secrets.example.yaml](helm/values.secrets.example.yaml).
 
-Минимальная последовательность такая:
+По умолчанию в шаблоне уже есть рабочая структура и локальные значения для примера.
 
-1. Запустить PostgreSQL
-2. Запустить Keycloak
-3. Запустить `config-server`
-4. Запустить `eureka-server`
-5. Запустить `gateway`
-6. Запустить `accounts`, `cash`, `transfers`, `notifications`
-7. Запустить `bank-ui`
+## Первый запуск
 
-### Сборка всего проекта
+Перед первым запуском нужно поменять в [helm/application.yml](helm/application.yml) значение:
+
+- `postgres.sql.init.mode: never` -> `postgres.sql.init.mode: always`
+
+Это нужно, чтобы приложения выполнили инициализацию схем и данных в PostgreSQL.
+
+## Основной запуск
+
+Полный цикл:
 
 ```bash
-./mvnw clean package -DskipTests
+task up
 ```
 
-Для Windows PowerShell:
+Эта команда:
 
-```powershell
-.\mvnw.cmd clean package -DskipTests
-```
+1. собирает все jar-файлы
+2. собирает Docker-образы
+3. обновляет Helm release `banking-platform`
 
-### Запуск отдельного модуля
+После запуска сервисы доступны по адресам:
 
-Пример:
+- `http://localhost:30080` — `bank-ui`
+- `http://localhost:30081` — `keycloak`
+
+## Основные команды
+
+Собрать всё:
 
 ```bash
-./mvnw -pl config-server spring-boot:run
+task build
 ```
 
-или:
+Задеплоить Helm release:
 
 ```bash
-./mvnw -pl bank-ui spring-boot:run
+task deploy
 ```
 
-Для Windows PowerShell:
-
-```powershell
-.\mvnw.cmd -pl config-server spring-boot:run
-.\mvnw.cmd -pl bank-ui spring-boot:run
-```
-
-Если нужен запуск jar:
+Удалить Helm release:
 
 ```bash
-./mvnw clean package
-java -jar bank-ui/target/bank-ui-1.0-SNAPSHOT.jar
+task uninstall
+```
+
+Полностью удалить namespace `banking-platform` вместе со всеми ресурсами и данными:
+
+```bash
+task clean
+```
+
+Перезапустить все `Deployment` и `StatefulSet` в namespace:
+
+```bash
+task restart
+```
+
+Пересобрать и задеплоить всё:
+
+```bash
+task up
 ```
 
 ## Тесты
 
+### Java-тесты
+
+```bash
+task test:java
+```
+
 В проекте есть:
+
 - unit tests
-- integration / e2e tests
-- contract tests producer-side
-- contract tests consumer-side
+- e2e / integration tests
+- contract tests
 
-### Запуск всех тестов
+Для backend e2e-тестов используется Testcontainers, поэтому Docker должен быть доступен.
 
-```bash
-./mvnw test
-```
+### Helm smoke tests
 
-Для Windows PowerShell:
-
-```powershell
-.\mvnw.cmd test
-```
-
-Для e2e-тестов backend-сервисов нужен рабочий Docker, потому что PostgreSQL поднимается через Testcontainers.
-
-## Что ещё важно знать
-
-- `gateway` пробрасывает пользовательский JWT в backend-сервисы.
-- `bank-ui` использует `gateway`, а не прямые вызовы бизнес-сервисов.
-- backend-сервисы вызывают друг друга напрямую.
-- операции, о которых в реальном банке обычно отправлялись бы уведомления, в этом проекте просто логируются сервисом `notifications`.
-- cleanup/retry/notification background processing реализован cron/fixed-delay задачами в соответствующих сервисах.
-
-## Полезные команды
-
-Прогнать тесты и собрать всё:
+После deploy можно прогнать chart-level smoke tests:
 
 ```bash
-./mvnw clean package
+task test:helm
 ```
 
-Запустить тесты одного сервиса:
+Эти тесты проверяют:
+
+- доступность `actuator/health` у Spring-сервисов
+- доступность OIDC metadata у `keycloak`
+- готовность `postgres` через `pg_isready`
+
+### Все тесты
 
 ```bash
-./mvnw -pl accounts test
+task test
 ```
 
-Поднять всё в Docker:
+## Полезные команды Kubernetes
+
+Посмотреть pod'ы:
+
+```bash
+kubectl get pods -n banking-platform
+```
+
+Посмотреть сервисы:
+
+```bash
+kubectl get svc -n banking-platform
+```
+
+Посмотреть логи pod'а:
+
+```bash
+kubectl logs -n banking-platform <pod-name>
+```
+
+Логи deployment:
+
+```bash
+kubectl logs -n banking-platform deploy/bank-ui
+```
+
+## Запасной вариант без Task
+
+Если не хочется использовать `Taskfile`, базовые команды такие:
+
+Сборка:
 
 ```bash
 ./mvnw clean package -DskipTests
-docker compose up --build -d
+docker build -t accounts:latest -f accounts/Dockerfile .
+docker build -t bank-ui:latest -f bank-ui/Dockerfile .
+docker build -t cash:latest -f cash/Dockerfile .
+docker build -t gateway:latest -f gateway/Dockerfile .
+docker build -t notifications:latest -f notifications/Dockerfile .
+docker build -t transfers:latest -f transfers/Dockerfile .
+docker build -t bank-keycloak:latest -f keycloak/Dockerfile .
 ```
 
-Остановить всё:
+Deploy:
 
 ```bash
-docker compose down
+helm dependency build helm
+helm upgrade --install banking-platform helm --namespace banking-platform --create-namespace -f helm/values.yaml -f helm/values.secrets.yaml
+```
+
+Удалить только Helm release:
+
+```bash
+helm uninstall banking-platform -n banking-platform
+```
+
+Полностью удалить namespace со всеми ресурсами и данными:
+
+```bash
+kubectl delete namespace banking-platform
 ```

@@ -1,0 +1,17 @@
+spring:
+  application.name: notifications
+  datasource:
+    url: ${postgres.base-url}?currentSchema=notifications
+    username: ${POSTGRES_USER}
+    password: ${POSTGRES_PASSWORD}
+  jpa.hibernate.ddl-auto: validate
+  sql.init.mode: ${postgres.sql.init.mode:never}
+  security.oauth2:
+    resourceserver.jwt:
+      issuer-uri: ${keycloak.issuer-uri}
+      jwk-set-uri: ${keycloak.openid-connect-uri}/certs
+
+notifications:
+  cleanup:
+    cron: 0 0 12 * * *
+    batch-size: 500

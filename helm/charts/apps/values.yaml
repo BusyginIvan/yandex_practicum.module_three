@@ -1,0 +1,67 @@
+defaults:
+  replicaCount: 1
+  containerPort: 8080
+  image:
+    pullPolicy: IfNotPresent
+  service:
+    type: ClusterIP
+    port: 80
+    targetPort: 8080
+  probes:
+    path: /actuator/health
+    initialDelaySeconds: 30
+    periodSeconds: 10
+    timeoutSeconds: 5
+
+services:
+  accounts:
+    image:
+      repository: accounts
+      tag: latest
+    configFile: configs/accounts.yml
+    secrets:
+      - postgres-secret
+      - accounts-secret
+
+  bank-ui:
+    image:
+      repository: bank-ui
+      tag: latest
+    configFile: configs/bank-ui.yml
+    secrets:
+      - bank-ui-secret
+    service:
+      type: NodePort
+      nodePortKey: bankUi
+
+  cash:
+    image:
+      repository: cash
+      tag: latest
+    configFile: configs/cash.yml
+    secrets:
+      - postgres-secret
+      - cash-secret
+
+  gateway:
+    image:
+      repository: gateway
+      tag: latest
+    configFile: configs/gateway.yml
+
+  notifications:
+    image:
+      repository: notifications
+      tag: latest
+    configFile: configs/notifications.yml
+    secrets:
+      - postgres-secret
+
+  transfers:
+    image:
+      repository: transfers
+      tag: latest
+    configFile: configs/transfers.yml
+    secrets:
+      - postgres-secret
+      - transfers-secret

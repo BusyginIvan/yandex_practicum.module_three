@@ -1,0 +1,69 @@
+version: '3'
+
+vars:
+  MVN:
+    sh: |
+      if [ "{{OS}}" = "windows" ]; then
+        printf "cmd /c mvnw.cmd"
+      else
+        printf "./mvnw"
+      fi
+  NAMESPACE: banking-platform
+  CHART_PATH: helm
+
+tasks:
+  build:
+    desc: Build all jars and Docker images
+    cmds:
+      - '{{.MVN}} clean package -DskipTests'
+      - 'docker build -t accounts:latest -f accounts/Dockerfile .'
+      - 'docker build -t bank-ui:latest -f bank-ui/Dockerfile .'
+      - 'docker build -t cash:latest -f cash/Dockerfile .'
+      - 'docker build -t gateway:latest -f gateway/Dockerfile .'
+      - 'docker build -t notifications:latest -f notifications/Dockerfile .'
+      - 'docker build -t transfers:latest -f transfers/Dockerfile .'
+      - 'docker build -t bank-keycloak:latest -f keycloak/Dockerfile .'
+
+  deploy:
+    desc: Deploy the Helm release into Kubernetes
+    cmds:
+      - 'helm dependency build {{.CHART_PATH}}'
+      - 'helm upgrade --install banking-platform {{.CHART_PATH}} --namespace {{.NAMESPACE}} --create-namespace -f {{.CHART_PATH}}/values.yaml -f {{.CHART_PATH}}/values.secrets.yaml'
+
+  uninstall:
+    desc: Uninstall the Helm release
+    cmds:
+      - 'helm uninstall banking-platform -n {{.NAMESPACE}}'
+
+  clean:
+    desc: Delete the namespace with all deployed resources and data
+    cmds:
+      - 'kubectl delete namespace {{.NAMESPACE}} --ignore-not-found=true'
+
+  restart:
+    desc: Restart all deployments and statefulsets in the namespace
+    cmds:
+      - 'kubectl rollout restart deployment -n {{.NAMESPACE}}'
+      - 'kubectl rollout restart statefulset -n {{.NAMESPACE}}'
+
+  up:
+    desc: Build everything and deploy
+    cmds:
+      - task: build
+      - task: deploy
+
+  test:java:
+    desc: Run Java tests
+    cmds:
+      - '{{.MVN}} test'
+
+  test:helm:
+    desc: Run Helm smoke tests for the installed release
+    cmds:
+      - 'helm test banking-platform -n {{.NAMESPACE}}'
+
+  test:
+    desc: Run Java tests and Helm smoke tests
+    cmds:
+      - task: test:java
+      - task: test:helm

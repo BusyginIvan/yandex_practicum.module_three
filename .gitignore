@@ -3,7 +3,9 @@
 target/
 META-INF/
 
+helm/Chart.lock
+helm/**/charts/*.tgz
+helm/values.secrets.yaml
+
 .idea/
 *.iml
-
-.env

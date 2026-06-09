@@ -1,5 +1,0 @@
-server.port: ${SERVER_PORT:8086}
-spring:
-  application.name: cash
-  config.import: configserver:${CONFIG_SERVER_URL:http://config-server:8081}
-management.endpoints.web.exposure.include: health

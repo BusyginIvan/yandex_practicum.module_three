@@ -12,16 +12,13 @@ import org.springframework.web.client.RestClient;
 public class IntegrationClientsConfig {
     private static final String CLIENT_REGISTRATION_ID = "keycloak";
 
-    private final RestClient.Builder loadBalancedRestClientBuilder;
     private final OAuth2AuthorizedClientManager authorizedClientManager;
     private final OAuth2AuthorizedClientRepository authorizedClientRepository;
 
     public IntegrationClientsConfig(
-        RestClient.Builder loadBalancedRestClientBuilder,
         OAuth2AuthorizedClientManager authorizedClientManager,
         OAuth2AuthorizedClientRepository authorizedClientRepository
     ) {
-        this.loadBalancedRestClientBuilder = loadBalancedRestClientBuilder;
         this.authorizedClientManager = authorizedClientManager;
         this.authorizedClientRepository = authorizedClientRepository;
     }
@@ -49,7 +46,7 @@ public class IntegrationClientsConfig {
             OAuth2ClientHttpRequestInterceptor.authorizationFailureHandler(authorizedClientRepository)
         );
 
-        return loadBalancedRestClientBuilder
+        return RestClient.builder()
             .baseUrl(baseUrl)
             .requestInterceptor(oauth2Interceptor)
             .build();

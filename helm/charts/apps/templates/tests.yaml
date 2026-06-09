@@ -1,0 +1,18 @@
+{{- range $name, $service := .Values.services }}
+{{- $probes := default dict $service.probes }}
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: {{ $name }}-test
+  annotations:
+    "helm.sh/hook": test
+    "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
+spec:
+  containers:
+    - name: wget
+      image: busybox:1.36
+      command: ["wget"]
+      args: ["-qO-", "http://{{ $name }}{{ default $.Values.defaults.probes.path $probes.path }}"]
+  restartPolicy: Never
+{{- end }}

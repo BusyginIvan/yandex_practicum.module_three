@@ -1,7 +1,6 @@
 spring:
-  cloud:
-    config.enabled: false
-    discovery.enabled: false
-  config.import: "optional:configserver:"
+  security.oauth2.client:
+    registration.keycloak:
+      client-id: bank-ui
 
-eureka.client.enabled: false
+keycloak.logout-uri: http://localhost/logout
