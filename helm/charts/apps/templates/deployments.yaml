@@ -1,0 +1,62 @@
+{{- range $name, $service := .Values.services }}
+{{- $image := default dict $service.image }}
+{{- $probes := default dict $service.probes }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ $name }}
+spec:
+  replicas: {{ default $.Values.defaults.replicaCount $service.replicaCount }}
+  selector:
+    matchLabels:
+      app: {{ $name }}
+  template:
+    metadata:
+      labels:
+        app: {{ $name }}
+    spec:
+      containers:
+        - name: {{ $name }}
+          image: "{{ $image.repository }}:{{ $image.tag }}"
+          imagePullPolicy: {{ default $.Values.defaults.image.pullPolicy $image.pullPolicy }}
+          ports:
+            - containerPort: {{ default $.Values.defaults.containerPort $service.containerPort }}
+              name: http
+{{- with $service.secrets }}
+          envFrom:
+{{- range . }}
+            - secretRef:
+                name: {{ . }}
+{{- end }}
+{{- end }}
+          env:
+            - name: SPRING_CONFIG_ADDITIONAL_LOCATION
+              value: optional:file:/config/common/,optional:file:/config/service/
+          volumeMounts:
+            - name: common-config
+              mountPath: /config/common
+            - name: service-config
+              mountPath: /config/service
+          readinessProbe:
+            httpGet:
+              path: {{ default $.Values.defaults.probes.path $probes.path }}
+              port: http
+            initialDelaySeconds: {{ default $.Values.defaults.probes.initialDelaySeconds $probes.initialDelaySeconds }}
+            periodSeconds: {{ default $.Values.defaults.probes.periodSeconds $probes.periodSeconds }}
+            timeoutSeconds: {{ default $.Values.defaults.probes.timeoutSeconds $probes.timeoutSeconds }}
+          livenessProbe:
+            httpGet:
+              path: {{ default $.Values.defaults.probes.path $probes.path }}
+              port: http
+            initialDelaySeconds: {{ default $.Values.defaults.probes.initialDelaySeconds $probes.initialDelaySeconds }}
+            periodSeconds: {{ default $.Values.defaults.probes.periodSeconds $probes.periodSeconds }}
+            timeoutSeconds: {{ default $.Values.defaults.probes.timeoutSeconds $probes.timeoutSeconds }}
+      volumes:
+        - name: common-config
+          configMap:
+            name: banking-platform-common-config
+        - name: service-config
+          configMap:
+            name: {{ $name }}-config
+{{- end }}

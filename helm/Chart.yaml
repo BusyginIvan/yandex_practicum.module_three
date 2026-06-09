@@ -11,21 +11,6 @@ dependencies:
   - name: keycloak
     version: 0.1.0
     repository: file://charts/keycloak
-  - name: gateway
+  - name: apps
     version: 0.1.0
-    repository: file://charts/gateway
-  - name: accounts
-    version: 0.1.0
-    repository: file://charts/accounts
-  - name: cash
-    version: 0.1.0
-    repository: file://charts/cash
-  - name: transfers
-    version: 0.1.0
-    repository: file://charts/transfers
-  - name: notifications
-    version: 0.1.0
-    repository: file://charts/notifications
-  - name: bank-ui
-    version: 0.1.0
-    repository: file://charts/bank-ui
+    repository: file://charts/apps

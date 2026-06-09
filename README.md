@@ -40,16 +40,19 @@
 
 - один namespace: `banking-platform`
 - один umbrella chart: `helm/`
-- по одному дочернему chart'у на каждый сервис
+- три дочерних chart'а:
+  - `postgres`
+  - `keycloak`
+  - `apps` для `bank-ui`, `gateway`, `accounts`, `cash`, `transfers`, `notifications`
 - `postgres` разворачивается как `StatefulSet`
 - `bank-ui` и `keycloak` доступны снаружи через `NodePort`
 
 ### Конфигурация
 
 - общий конфиг для Spring-приложений: [helm/application.yml](helm/application.yml)
-- конфиг конкретного сервиса: `helm/charts/<service>/application.yml`
+- конфиги приложений: `helm/charts/apps/configs/*.yml`
 - общий `ConfigMap` создаётся в зонтичном чарте
-- service-specific `ConfigMap` создаётся в чарте соответствующего сервиса
+- service-specific `ConfigMap`-ы для приложений создаются в чарте `apps`
 - секреты задаются в `helm/values.secrets.yaml`
 
 ### База данных

@@ -1,0 +1,10 @@
+{{- range $name, $service := .Values.services }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ $name }}-config
+data:
+  application.yml: |
+{{ tpl ($.Files.Get $service.configFile) $ | indent 4 }}
+{{- end }}

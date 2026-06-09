@@ -1,7 +1,0 @@
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: gateway-config
-data:
-  application.yml: |
-{{ tpl (.Files.Get "application.yml") . | indent 4 }}

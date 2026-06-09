@@ -6,4 +6,4 @@ keycloak:
 
 postgres:
   base-url: {{ printf "jdbc:postgresql://%s:%v/%s" .Values.global.postgres.host .Values.global.postgres.port .Values.global.postgres.database }}
-  sql.init.mode: never  # never, always
+  sql.init.mode: always  # never, always
